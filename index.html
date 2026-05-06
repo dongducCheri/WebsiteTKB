@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUST TKB</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <a href="index.html" class="brand"><span class="brand-home">Home</span> | TimeTable</a>
+  </div>
+</header>
+
+<main class="main container">
+  <h1 class="page-title">Xếp lịch học</h1>
+
+  <!-- Upload -->
+  <div class="field-row">
+    <label class="field-label">Tải lên Thời khóa biểu dự kiến</label>
+    <div class="field-control">
+      <div class="drop-zone" id="drop-zone">
+        <span>Kéo thả file vào đây hoặc <span class="link-inline" id="btn-browse">click để Tải lên</span></span>
+        <span id="file-chip" class="file-chip" hidden></span>
+        <input type="file" id="file-input" accept=".xlsx,.xls" hidden>
+      </div>
+      <div class="field-hint">
+        Tải file Excel TKB tại <a class="link-inline" href="https://eshust.hust.edu.vn" target="_blank">EsHUST</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search HP -->
+  <div class="field-row">
+    <label class="field-label">Tên hoặc Mã HP muốn đăng ký</label>
+    <div class="field-control">
+      <div class="search-wrapper">
+        <input id="search-input" class="form-input" placeholder="Tên hoặc Mã HP" disabled autocomplete="off">
+        <div id="search-dropdown" class="search-dropdown" hidden></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chip list học phần đã chọn -->
+  <div class="field-row">
+    <label class="field-label">Các học phần muốn đăng ký:</label>
+    <div class="field-control">
+      <div id="chip-list"></div>
+    </div>
+  </div>
+  
+  <!-- Chương trình -->
+  <div class="field-row">
+    <label class="field-label">Chương trình học</label>
+    <div class="field-control">
+      <select id="program-select" class="form-input" disabled>
+        <option value="">Tất cả chương trình</option>
+        <option value="CT CHUẨN">CT CHUẨN</option>
+        <option value="ELITECH">ELITECH</option>
+        <option value="VLVH">VLVH</option>
+        <option value="KSCSDT">KSCSDT</option>
+        <option value="SIE">SIE</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn btn-search" id="btn-search" disabled>Tìm lớp</button>
+
+  <hr class="divider">
+
+  <!-- Kết quả tìm kiếm -->
+  <div id="results" hidden></div>
+
+  <!-- Bottom actions -->
+  <div class="bottom-bar">
+    <a href="#" id="link-view-tkb" class="link-inline">Xem TKB đã</a>
+    <a href="#" id="link-export" class="link-inline">⬇ Xuất file</a>
+    <span class="muted">hoặc</span>
+    <a href="#" id="link-save" class="link-inline">💾 Lưu trong Browser</a>
+  </div>
+
+  <button class="btn btn-dark" id="btn-guide">Hướng dẫn</button>
+
+  <!-- Có thể bạn quan tâm -->
+  <div class="related">
+    <p class="related-title">Nếu có thắc mắc:</p>
+    <ul>
+      <li><a href="https://www.facebook.com/dongxuand" class="link-inline" target="_blank">👤 Đông Xuân Đức</a></li>
+    </ul>
+  </div>
+</main>
+
+<!-- Modal hướng dẫn -->
+<div id="modal-guide" class="modal-overlay" hidden>
+  <div class="modal-box">
+    <h2>Hướng dẫn sử dụng</h2>
+    <ol>
+      <li>Tải file Excel TKB từ EsHUST (Thời khóa biểu dự kiến).</li>
+      <li>Upload file vào ô kéo thả ở trên.</li>
+      <li>Nhập tên hoặc mã học phần cần tìm, chọn chương trình học.</li>
+      <li>Nhấn <strong>Tìm lớp</strong> để xem danh sách lớp.</li>
+      <li>Click vào học phần để xem chi tiết các lớp.</li>
+      <li>Dùng <strong>Lưu trong Browser</strong> để lưu lại cho lần sau.</li>
+    </ol>
+    <button class="btn btn-dark" id="btn-close-guide">Đóng</button>
+  </div>
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<!-- utils & state phải load trước tất cả -->
+<script src="js/utils.js"></script>
+<script src="js/state.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/parser.js"></script>
+<!-- UI modules -->
+<script src="js/chips.js"></script>
+<script src="js/search.js"></script>
+<script src="js/export.js"></script>
+<script src="js/upload.js"></script>
+<!-- init cuối cùng -->
+<script src="js/app.js"></script>
+</body>
+</html>
