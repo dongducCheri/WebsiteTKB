@@ -3,8 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const dropZone  = document.getElementById('drop-zone');
 
   // Upload
-  document.getElementById('btn-browse').addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('click', () => {
+  dropZone.addEventListener('click', e => {
+    if (e.target.id === 'btn-remove-file' || e.target.classList.contains('chip-remove')) {
+      resetUpload();
+      return;
+    }
     if (!document.getElementById('btn-browse').hidden) fileInput.click();
   });
   fileInput.addEventListener('change', () => {

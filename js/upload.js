@@ -12,10 +12,6 @@ function onDataReady(rows, courseMap, stats) {
   document.getElementById('program-select').disabled = false;
   document.getElementById('btn-search').disabled     = false;
 
-  document.getElementById('btn-remove-file').addEventListener('click', e => {
-    e.stopPropagation();
-    resetUpload();
-  });
 }
 
 function resetUpload() {
