@@ -7,7 +7,13 @@ function addChip(maHP) {
 function removeChip(maHP) {
   state.selectedCourses.delete(maHP);
   delete state.selectedClasses[maHP];
+  state.timetableCourses.delete(maHP);
   renderChips();
+  
+  const resultsEl = document.getElementById('results');
+  if (resultsEl && !resultsEl.hidden) {
+    renderSearchResults();
+  }
 }
 
 function renderChips() {

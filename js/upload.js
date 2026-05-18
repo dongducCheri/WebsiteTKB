@@ -18,6 +18,7 @@ function resetUpload() {
   clearStorage();
   state.rows = null; state.courseMap = null; state.stats = null;
   state.selectedCourses.clear();
+  state.timetableCourses.clear();
   state.selectedClasses = {};
 
   document.getElementById('file-chip').hidden  = true;
