@@ -504,12 +504,238 @@ body {
   border-right: 4px solid #333;
 }
 
-/* Timetable dragover animation and color styling */
-.timetable-container.tt-drag-over {
+/* ── Absolute-position Timetable ── */
+.tt-wrap {
+  overflow: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  min-width: 0;
+}
+
+.tt-wrap.tt-drag-over {
   outline: 2px dashed var(--blue);
-  outline-offset: 4px;
-  background-color: #f8faff !important;
-  transition: all 0.15s ease-in-out;
+  outline-offset: 2px;
+  background-color: #f8faff;
+}
+
+.tt-head {
+  display: flex;
+  border-bottom: 2px solid #ddd;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+}
+
+.tt-corner {
+  width: 56px;
+  flex-shrink: 0;
+  border-right: 1px solid #ddd;
+}
+
+.tt-dh {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 6px 0;
+  font-weight: 600;
+  font-size: 13px;
+  border-right: 1px solid #eee;
+  color: #333;
+}
+.tt-dh:last-child { border-right: none; }
+
+.tt-body { display: flex; }
+
+.tt-time-col {
+  width: 56px;
+  flex-shrink: 0;
+  position: relative;
+  height: var(--tt-height, 600px);
+  border-right: 1px solid #ddd;
+}
+
+.tt-lbl {
+  position: absolute;
+  right: 4px;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: #999;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tt-day-col {
+  flex: 1;
+  min-width: 80px;
+  position: relative;
+  height: var(--tt-height, 600px);
+  border-right: 1px solid #eee;
+}
+.tt-day-col:last-child { border-right: none; }
+
+.tt-gridline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #f3f3f3;
+  pointer-events: none;
+}
+.tt-gl-hour { border-top-color: #e0e0e0; }
+
+/* Course block overrides for absolute layout */
+.tt-day-col .course-block {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Pending (unselected) blocks — all classes shown before user picks one */
+.course-block.cb-pending {
+  background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%) !important;
+  border-left-color: #90b8f8 !important;
+  opacity: 0.7;
+  box-shadow: none;
+}
+.course-block.cb-pending:hover {
+  opacity: 1;
+  box-shadow: 0 2px 8px rgba(26,115,232,0.2);
+  cursor: pointer;
+}
+
+/* ── Conflict / Detail Modal ── */
+.cmodal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+}
+
+.cmodal-box {
+  background: #1e2124;
+  color: #e8eaed;
+  border-radius: 10px;
+  padding: 28px 28px 20px;
+  max-width: 92vw;
+  max-height: 82vh;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.55);
+  position: relative;
+}
+
+.cmodal-box--light {
+  background: #fff;
+  color: #333;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  max-width: 480px;
+}
+
+.cmodal-close-x {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+  opacity: 0.6;
+  line-height: 1;
+  padding: 2px 6px;
+}
+.cmodal-close-x:hover { opacity: 1; }
+
+.cmodal-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e8eaed;
+  text-align: center;
+  padding-right: 20px;
+}
+.cmodal-title--light {
+  color: var(--blue);
+  font-size: 1.05rem;
+  text-align: left;
+}
+
+.cmodal-table-wrap {
+  overflow: auto;
+  max-height: 52vh;
+  border-radius: 6px;
+  border: 1px solid #3c4043;
+}
+
+.cmodal-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.cmodal-table th {
+  background: #3c4043;
+  color: #fff;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-right: 1px solid #5f6368;
+  border-bottom: 1.5px solid #5f6368;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.cmodal-table th:last-child { border-right: none; }
+
+.cmodal-table td {
+  padding: 8px 12px;
+  border-right: 1px solid #3c4043;
+  border-bottom: 1px solid #3c4043;
+  white-space: nowrap;
+  color: #e8eaed;
+}
+.cmodal-table td:last-child  { border-right: none; }
+.cmodal-table tr:last-child td { border-bottom: none; }
+
+.conflict-row { cursor: pointer; }
+.conflict-row:hover td { background: #37474f; color: #fff; }
+
+.cmodal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Block detail table (light modal) */
+.bdetail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.bdetail-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+.bdetail-table td:first-child {
+  color: #666;
+  font-weight: 500;
+  width: 32%;
+  white-space: nowrap;
+}
+.bdetail-table tr:last-child td { border-bottom: none; }
+
+.bdetail-deselect-btn {
+  border-color: var(--blue);
+  color: var(--blue);
 }
 
 /* ── Timetable Grid (CSS Grid) ── */
@@ -617,6 +843,7 @@ body {
   line-height: 1.2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -833,7 +1060,7 @@ body {
 /* ── Expanded Course Block ── */
 .course-block.expanded {
   height: auto !important;
-  min-height: 100% !important;
+  min-height: 80px !important;
   z-index: 50 !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
   background: linear-gradient(90deg, #81d4fa, #80cbc4, #a5d6a7) !important;
