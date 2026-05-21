@@ -596,7 +596,8 @@ body {
 /* Pending (unselected) blocks — all classes shown before user picks one */
 .course-block.cb-pending {
   background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%) !important;
-  border-left-color: #90b8f8 !important;
+  border-left: none !important;
+  border-radius: 0 !important;
   opacity: 0.7;
   box-shadow: none;
 }
@@ -827,8 +828,8 @@ body {
 }
 
 .cb-type-badge {
-  background: rgba(26, 115, 232, 0.15);
-  color: #1a73e8;
+  background: rgba(0, 0, 0, 0.08);
+  color: #222;
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 6px;
@@ -839,7 +840,7 @@ body {
 .cb-name {
   font-weight: 700;
   font-size: 0.85rem;
-  color: #185abc;
+  color: #111;
   line-height: 1.2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
