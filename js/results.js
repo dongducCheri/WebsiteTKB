@@ -67,9 +67,15 @@ function renderSearchResults() {
     el.addEventListener('click', () => {
       const maHP = el.dataset.mahp;
       if (state.timetableCourses.has(maHP)) {
+        // Toggle off — bỏ chọn học phần đang active
         state.timetableCourses.delete(maHP);
         delete state.selectedClasses[maHP];
       } else {
+        // Xóa các học phần đang pending (chưa chọn lớp) để chỉ 1 học phần pending tại 1 thời điểm.
+        // Các học phần đã chọn lớp rồi thì giữ nguyên.
+        state.timetableCourses.forEach(hp => {
+          if (!state.selectedClasses[hp]) state.timetableCourses.delete(hp);
+        });
         state.timetableCourses.add(maHP);
       }
       updateChipStyles();
