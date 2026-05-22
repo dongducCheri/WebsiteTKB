@@ -1,3 +1,6 @@
+/* =============================================================
+   1. RESET & BIEN CSS GOC
+   ============================================================= */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 [hidden] { display: none !important; }
 
@@ -18,7 +21,9 @@ body {
   font-size: 14px;
 }
 
-/* ── Header ── */
+/* =============================================================
+   2. BO CUC & HEADER
+   ============================================================= */
 .header {
   background: linear-gradient(180deg, #1a2535 0%, #1e3a5f 65%, #3d7ab5 100%);
   padding: 14px 0 20px;
@@ -26,11 +31,9 @@ body {
 .brand { color: #fff; font-size: 1.25rem; font-weight: 600; text-decoration: none; }
 .brand-home { color: #60b8f0; }
 
-/* ── Layout ── */
 .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
 .main { padding: 28px 24px; max-width: 900px; margin: 0 auto; }
 
-/* ── Page title ── */
 .page-title {
   font-size: 1.35rem;
   font-weight: 600;
@@ -38,7 +41,6 @@ body {
   margin-bottom: 24px;
 }
 
-/* ── Field rows ── */
 .field-row {
   display: grid;
   grid-template-columns: 230px 1fr;
@@ -46,20 +48,42 @@ body {
   align-items: start;
   margin-bottom: 14px;
 }
-
 .field-label {
   padding-top: 7px;
   color: var(--text);
   line-height: 1.4;
 }
-
 .field-hint {
   font-size: .8rem;
   color: var(--muted);
   margin-top: 5px;
 }
 
-/* ── Drop zone ── */
+.link-inline {
+  color: var(--blue);
+  cursor: pointer;
+  text-decoration: none;
+}
+.link-inline:hover { text-decoration: underline; }
+.muted { color: var(--muted); }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+.bottom-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .9rem; }
+
+.related { margin-top: 28px; }
+.related-title { font-size: .95rem; font-weight: 600; margin-bottom: 8px; }
+.related ul { list-style: none; }
+.related li { margin-bottom: 6px; }
+.related a  { font-size: .9rem; }
+
+@media (max-width: 600px) {
+  .field-row { grid-template-columns: 1fr; gap: 4px; }
+  .field-label { padding-top: 0; font-weight: 500; }
+}
+
+/* =============================================================
+   3. UPLOAD / VUNG KEO THA FILE
+   ============================================================= */
 .drop-zone {
   border: 1px dashed var(--border);
   border-radius: var(--radius);
@@ -96,7 +120,9 @@ body {
 }
 .file-chip .chip-remove:hover { opacity: 1; }
 
-/* ── Form inputs ── */
+/* =============================================================
+   4. FORM & NUT BAM
+   ============================================================= */
 .form-input {
   width: 100%;
   padding: 7px 11px;
@@ -108,10 +134,9 @@ body {
   outline: none;
   transition: border-color .15s;
 }
-.form-input:focus   { border-color: var(--blue); }
+.form-input:focus    { border-color: var(--blue); }
 .form-input:disabled { background: var(--bg); cursor: not-allowed; color: var(--muted); }
 
-/* ── Buttons ── */
 .btn {
   padding: 7px 20px;
   border-radius: var(--radius);
@@ -125,134 +150,15 @@ body {
 .btn:hover:not(:disabled) { opacity: .85; }
 .btn:disabled { cursor: not-allowed; opacity: .5; }
 
-.btn-search {
-  border-color: var(--blue);
-  color: var(--blue);
-  margin-top: 4px;
-}
-.btn-dark { background: #333; color: #fff; border-color: #333; margin-top: 10px; }
+.btn-search { border-color: var(--blue); color: var(--blue); margin-top: 4px; }
+.btn-dark   { background: #333; color: #fff; border-color: #333; margin-top: 10px; }
+.btn-sm     { padding: 4px 12px; font-size: 0.75rem; }
+.btn-pick   { background: var(--blue); color: #fff; border-color: var(--blue); }
 
-/* ── Link style ── */
-.link-inline {
-  color: var(--blue);
-  cursor: pointer;
-  text-decoration: none;
-}
-.link-inline:hover { text-decoration: underline; }
-.muted { color: var(--muted); }
-
-/* ── Divider ── */
-.divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
-
-/* ── Bottom bar ── */
-.bottom-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .9rem; }
-
-/* ── Related ── */
-.related { margin-top: 28px; }
-.related-title { font-size: .95rem; font-weight: 600; margin-bottom: 8px; }
-.related ul { list-style: none; }
-.related li { margin-bottom: 6px; }
-.related a  { font-size: .9rem; }
-
-/* ── Results ── */
-#results { margin-top: 8px; }
-
-.result-count { font-size: .85rem; color: var(--muted); margin-bottom: 10px; }
-
-.result-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: .88rem;
-  background: #fff;
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,.08);
-}
-.result-table th {
-  background: var(--bg);
-  padding: 8px 12px;
-  text-align: left;
-  font-weight: 600;
-  border-bottom: 2px solid var(--border);
-  white-space: nowrap;
-}
-.result-table td {
-  padding: 7px 12px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-.result-table tbody tr:hover { background: #f5f9ff; cursor: pointer; }
-.result-table td:first-child  { font-weight: 600; color: var(--blue); font-family: monospace; }
-.result-table tbody tr:last-child td { border-bottom: none; }
-
-/* ── Class detail (expanded row) ── */
-.detail-row td { padding: 0 !important; background: #f8faff; }
-.class-detail { padding: 12px 16px; font-size: .85rem; }
-.class-detail table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 8px;
-  font-size: .82rem;
-}
-.class-detail table th {
-  background: #eef2fb;
-  padding: 5px 10px;
-  font-weight: 600;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-}
-.class-detail table td {
-  padding: 5px 10px;
-  border-bottom: 1px solid #eee;
-}
-.class-detail table tr:last-child td { border-bottom: none; }
-.mahp-badge { font-weight: 600; color: var(--blue); font-family: monospace; }
-.tag {
-  display: inline-block;
-  background: #e8f0fe;
-  color: #1558d6;
-  border-radius: 3px;
-  padding: 1px 7px;
-  font-size: .78rem;
-  font-weight: 500;
-}
-
-/* ── Loading state ── */
-.loading-text { color: var(--muted); font-size: .9rem; padding: 8px 0; }
-
-/* ── Modal ── */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-.modal-overlay[hidden] { display: none; }
-.modal-box {
-  background: #fff;
-  border-radius: 10px;
-  padding: 28px 32px;
-  max-width: 480px;
-  width: 90%;
-  box-shadow: 0 8px 32px rgba(0,0,0,.18);
-}
-.modal-box h2 { font-size: 1.1rem; margin-bottom: 14px; }
-.modal-box ol { padding-left: 20px; line-height: 2; font-size: .9rem; }
-.modal-box .btn { margin-top: 20px; }
-
-/* ── Responsive ── */
-@media (max-width: 600px) {
-  .field-row { grid-template-columns: 1fr; gap: 4px; }
-  .field-label { padding-top: 0; font-weight: 500; }
-}
-
-/* ── Search dropdown ── */
-.search-wrapper {
-  position: relative;
-}
+/* =============================================================
+   5. O TIM KIEM & DANH SACH CHIP HOC PHAN
+   ============================================================= */
+.search-wrapper { position: relative; }
 
 .search-dropdown {
   position: absolute;
@@ -302,14 +208,13 @@ body {
 
 .row-picked { background: #eef4ff; }
 
-#chip-list{
+#chip-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   min-height: 32px;
 }
-
-.chip{
+.chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -319,10 +224,833 @@ body {
   border-radius: 16px;
   font-size: 14px;
 }
-
-.chip-x {
-  cursor: pointer;
-  color: #c00;
-  font-weight: bold;
-}
+.chip-x { cursor: pointer; color: #c00; font-weight: bold; }
 .chip-x:hover { color: #900; }
+
+/* =============================================================
+   6. KET QUA TIM KIEM & BANG DU LIEU
+   ============================================================= */
+#results { margin-top: 8px; }
+.loading-text { color: var(--muted); font-size: .9rem; padding: 8px 0; }
+.result-count { font-size: .85rem; color: var(--muted); margin-bottom: 10px; }
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .88rem;
+  background: #fff;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.result-table th {
+  background: var(--bg);
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+.result-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.result-table tbody tr:hover { background: #f5f9ff; cursor: pointer; }
+.result-table td:first-child  { font-weight: 600; color: var(--blue); font-family: monospace; }
+.result-table tbody tr:last-child td { border-bottom: none; }
+
+.detail-row td { padding: 0 !important; background: #f8faff; }
+.class-detail { padding: 12px 16px; font-size: .85rem; }
+.class-detail table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: .82rem;
+}
+.class-detail table th {
+  background: #eef2fb;
+  padding: 5px 10px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.class-detail table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #eee;
+}
+.class-detail table tr:last-child td { border-bottom: none; }
+
+.mahp-badge { font-weight: 600; color: var(--blue); font-family: monospace; }
+.tag {
+  display: inline-block;
+  background: #e8f0fe;
+  color: #1558d6;
+  border-radius: 3px;
+  padding: 1px 7px;
+  font-size: .78rem;
+  font-weight: 500;
+}
+
+/* =============================================================
+   7. DANH SACH HOC PHAN (tim thay / khong tim thay, goi y)
+   ============================================================= */
+.hp-not-found {
+  background: #fff8e1;
+  border-bottom: 1px solid #ffe082;
+  border-top: 1px solid #ffe082;
+  padding: 12px 24px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #795548;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+}
+.hp-not-found-label { color: #d32f2f; font-weight: 600; }
+.hp-not-found-item  { color: #333; font-style: italic; }
+
+.hp-found-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  padding: 0 24px;
+}
+
+.hp-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: #f1f3f4;
+  border: 1px solid #dadce0;
+  border-radius: 20px;
+  font-size: 13.5px;
+  color: #3c4043;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(60,64,67,0.1);
+}
+.hp-item b { color: var(--blue); margin-right: 4px; }
+.hp-item:hover {
+  background: #e8f0fe;
+  border-color: #aecbfa;
+  color: #185abc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(26,115,232,0.15);
+}
+.hp-item.hp-active {
+  background: #e8f0fe;
+  border-color: var(--blue);
+  color: #1a73e8;
+  font-weight: 600;
+  box-shadow: 0 0 0 2px rgba(26,115,232,0.2), 0 2px 4px rgba(26,115,232,0.1);
+}
+.hp-item.hp-dragging { opacity: 0.4; transform: scale(0.95); }
+
+.hp-hint {
+  background: #fff9e6;
+  border-bottom: 1px solid #ffe0b2;
+  border-top: 1px solid #ffe0b2;
+  padding: 10px 24px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  color: #e65100;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+}
+.hp-hint-sub { color: #666; font-style: italic; font-size: 0.85rem; }
+
+/* =============================================================
+   8. THANH TRUOT CHIEU CAO BANG TKB
+   ============================================================= */
+.slider-control-group {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  padding: 0 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.slider-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 110px;
+}
+
+.height-range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 250px;
+  height: 6px;
+  border-radius: 3px;
+  background: #e0e0e0;
+  outline: none;
+}
+.height-range-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  background: #dadce0;
+  border-radius: 3px;
+}
+.height-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--blue);
+  cursor: pointer;
+  margin-top: -6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.1s ease, background-color 0.1s ease;
+}
+.height-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: #1557b0;
+}
+
+.slider-value-balloon {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #333;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  min-width: 48px;
+  text-align: center;
+  position: relative;
+  margin-left: 8px;
+}
+.slider-value-balloon::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-right: 4px solid #333;
+}
+
+/* =============================================================
+   9. BANG TKB — LUOI TUYET DOI (absolute-position)
+   ============================================================= */
+.timetable-section {
+  margin-top: 30px;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  padding: 0 24px;
+}
+.timetable-section h3 { margin-bottom: 15px; font-size: 1.1rem; font-weight: 600; }
+
+.tt-wrap {
+  overflow: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  min-width: 0;
+}
+.tt-wrap.tt-drag-over {
+  outline: 2px dashed var(--blue);
+  outline-offset: 2px;
+  background-color: #f8faff;
+}
+
+.tt-head {
+  display: flex;
+  border-bottom: 2px solid #ddd;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+}
+.tt-corner { width: 56px; flex-shrink: 0; border-right: 1px solid #ddd; }
+.tt-dh {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 6px 0;
+  font-weight: 600;
+  font-size: 13px;
+  border-right: 1px solid #eee;
+  color: #333;
+}
+.tt-dh:last-child { border-right: none; }
+
+.tt-body { display: flex; }
+
+.tt-time-col {
+  width: 56px;
+  flex-shrink: 0;
+  position: relative;
+  height: var(--tt-height, 600px);
+  border-right: 1px solid #ddd;
+}
+.tt-lbl {
+  position: absolute;
+  right: 4px;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: #999;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tt-day-col {
+  flex: 1;
+  min-width: 80px;
+  position: relative;
+  height: var(--tt-height, 600px);
+  border-right: 1px solid #eee;
+}
+.tt-day-col:last-child { border-right: none; }
+
+.tt-gridline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #f3f3f3;
+  pointer-events: none;
+}
+.tt-gl-hour { border-top-color: #e0e0e0; }
+
+/* Ghi de style khoi mon hoc trong luoi tuyet doi */
+.tt-day-col .course-block {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.85) !important;
+  border-left: 4px solid var(--blue) !important;
+  border-radius: 0 !important;
+}
+.tt-day-col .course-block:hover { z-index: 20 !important; }
+.tt-day-col .course-block.cb-pending { border-left: 2px solid rgba(255,255,255,0.85) !important; }
+
+/* Khoi cho (pending) — hien tat ca lop truoc khi nguoi dung chon */
+.course-block.cb-pending {
+  background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%) !important;
+  border-left: none !important;
+  border-radius: 0 !important;
+  opacity: 0.7;
+  box-shadow: none;
+}
+.course-block.cb-pending:hover {
+  opacity: 1;
+  box-shadow: 0 2px 8px rgba(26,115,232,0.2);
+  cursor: pointer;
+}
+
+.cb-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #111;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+/* Mui ten dieu huong ▲▼ cho cac khoi bi chong len nhau */
+.cb-nav {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  z-index: 2;
+}
+.cb-nav-btn {
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(0,0,0,0.18);
+  border-radius: 2px;
+  font-size: 8px;
+  line-height: 1;
+  padding: 2px 3px;
+  cursor: pointer;
+  color: #333;
+  user-select: none;
+}
+.cb-nav-btn:hover { background: #fff; border-color: rgba(0,0,0,0.35); }
+
+/* =============================================================
+   10. KHOI MON HOC TREN BANG TKB (mac dinh + mo rong)
+   ============================================================= */
+.course-block {
+  position: relative;
+  background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%) !important;
+  border: none !important;
+  border-left: 4px solid var(--blue) !important;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.15);
+  border-radius: 6px;
+  padding: 6px 10px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+  gap: 4px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  z-index: 2;
+  margin: 2px 0;
+}
+.course-block:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
+  z-index: 10;
+}
+
+.cb-type-badge {
+  background: rgba(0, 0, 0, 0.08);
+  color: #222;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.cb-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #111;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cb-name-trigger          { cursor: pointer; }
+.cb-name-trigger:hover    { text-decoration: underline; }
+.cb-details { font-size: 0.75rem; color: #5f6368; font-weight: 500; }
+
+/* Trang thai mo rong (click vao khoi) */
+.course-block.expanded {
+  height: auto !important;
+  min-height: 80px !important;
+  z-index: 50 !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+  background: linear-gradient(90deg, #81d4fa, #80cbc4, #a5d6a7) !important;
+  border-left: none !important;
+  border: none !important;
+  padding: 8px 12px !important;
+  animation: expandBlock 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.course-block.expanded .cb-name {
+  color: #1565c0 !important;
+  font-size: 0.9rem !important;
+  margin-bottom: 4px;
+}
+.course-block.expanded .cb-type-badge {
+  background: rgba(255, 255, 255, 0.5) !important;
+  color: #004d40 !important;
+  border: 1px solid rgba(0, 77, 64, 0.2) !important;
+}
+.course-block.expanded .cb-details,
+.course-block.expanded .cb-details-list {
+  color: #2c3e50 !important;
+  font-size: 0.8rem !important;
+  line-height: 1.4 !important;
+}
+
+@keyframes expandBlock {
+  from { transform: scale(0.98); opacity: 0.9; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.cb-close-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  background: #e57373 !important;
+  color: #fff !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2) !important;
+  transition: all 0.15s ease !important;
+  z-index: 10 !important;
+  border: 1px solid #d32f2f !important;
+  line-height: 1 !important;
+}
+.cb-close-btn:hover { background: #f44336 !important; transform: scale(1.1) !important; }
+
+/* =============================================================
+   11. MODAL (huong dan + chon lop / chi tiet lop)
+   ============================================================= */
+
+/* Modal huong dan su dung */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal-overlay[hidden] { display: none; }
+.modal-box {
+  background: #fff;
+  border-radius: 10px;
+  padding: 28px 32px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18);
+}
+.modal-box h2   { font-size: 1.1rem; margin-bottom: 14px; }
+.modal-box ol   { padding-left: 20px; line-height: 2; font-size: .9rem; }
+.modal-box .btn { margin-top: 20px; }
+
+/* Modal chon lop / chi tiet lop */
+.cmodal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+}
+.cmodal-box {
+  background: #1e2124;
+  color: #e8eaed;
+  border-radius: 10px;
+  padding: 28px 28px 20px;
+  max-width: 92vw;
+  max-height: 82vh;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.55);
+  position: relative;
+}
+.cmodal-box--light {
+  background: #fff;
+  color: #333;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  max-width: 480px;
+}
+
+.cmodal-close-x {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+  opacity: 0.6;
+  line-height: 1;
+  padding: 2px 6px;
+}
+.cmodal-close-x:hover { opacity: 1; }
+
+.cmodal-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e8eaed;
+  text-align: center;
+  padding-right: 20px;
+}
+.cmodal-title--light { color: var(--blue); font-size: 1.05rem; text-align: left; }
+
+.cmodal-table-wrap {
+  overflow: auto;
+  max-height: 52vh;
+  border-radius: 6px;
+  border: 1px solid #3c4043;
+}
+.cmodal-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+.cmodal-table th {
+  background: #3c4043;
+  color: #fff;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-right: 1px solid #5f6368;
+  border-bottom: 1.5px solid #5f6368;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.cmodal-table th:last-child { border-right: none; }
+.cmodal-table td {
+  padding: 8px 12px;
+  border-right: 1px solid #3c4043;
+  border-bottom: 1px solid #3c4043;
+  white-space: nowrap;
+  color: #e8eaed;
+}
+.cmodal-table td:last-child      { border-right: none; }
+.cmodal-table tr:last-child td   { border-bottom: none; }
+.conflict-row                    { cursor: pointer; }
+.conflict-row:hover td           { background: #37474f; color: #fff; }
+
+.cmodal-footer { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* Bang chi tiet lop ben trong modal sang mau */
+.bdetail-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.bdetail-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+.bdetail-table td:first-child {
+  color: #666;
+  font-weight: 500;
+  width: 32%;
+  white-space: nowrap;
+}
+.bdetail-table tr:last-child td { border-bottom: none; }
+.bdetail-deselect-btn { border-color: var(--blue); color: var(--blue); }
+
+/* =============================================================
+   12. TOOLTIP KHI DI CHUOT QUA DONG EXCEL
+   ============================================================= */
+.rich-tooltip {
+  position: fixed;
+  background: #252627;
+  color: #e8eaed;
+  border: 1.5px solid #3c4043;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 0;
+  z-index: 99999;
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 0.75rem;
+  max-width: 95vw;
+  overflow: hidden;
+  animation: tooltipFadeIn 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tooltip-table-wrapper { overflow-x: auto; max-width: 100%; }
+.tooltip-table { border-collapse: collapse; width: max-content; text-align: left; }
+.tooltip-table th {
+  background: #3c4043;
+  color: #fff;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-right: 1px solid #5f6368;
+  border-bottom: 1.5px solid #5f6368;
+  white-space: nowrap;
+}
+.tooltip-table th:last-child { border-right: none; }
+.tooltip-table td {
+  padding: 8px 12px;
+  border-right: 1px solid #3c4043;
+  border-bottom: 1px solid #3c4043;
+  white-space: nowrap;
+  background: #252627;
+  color: #e8eaed;
+}
+.tooltip-table td:last-child      { border-right: none; }
+.tooltip-table tr:last-child td   { border-bottom: none; }
+
+/* =============================================================
+   13. CU (LEGACY) — Luoi CSS Grid & The Hoc Phan
+   (giu lai de tham khao; da duoc thay the boi layout tuyet doi)
+   ============================================================= */
+.timetable-container {
+  display: grid;
+  grid-template-columns: 65px repeat(6, minmax(150px, 1fr));
+  grid-template-rows: 40px repeat(6, var(--row-height, 60px));
+  border-left: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  background-color: #fff;
+  position: relative;
+  overflow-x: auto;
+}
+.time-axis {
+  grid-column: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-right: 8px;
+  font-size: 12px;
+  color: #555;
+  border-right: 2px solid #333;
+  margin-top: -6px;
+}
+.day-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 14px;
+  color: #111;
+  border-right: 1px solid #ddd;
+  background-color: #fff;
+}
+.timetable-container > .grid-cell {
+  border-right: 1px solid #ddd;
+  grid-row: 2 / span 6;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hang luoi tuong ung voi kip hoc */
+.kip-1 { grid-row: 2 / span 1; }
+.kip-2 { grid-row: 3 / span 1; }
+.kip-3 { grid-row: 4 / span 1; }
+.kip-4 { grid-row: 5 / span 1; }
+.kip-5 { grid-row: 6 / span 1; }
+.kip-6 { grid-row: 7 / span 1; }
+.kip-1-2 { grid-row: 2 / span 2; }
+.kip-2-3 { grid-row: 3 / span 2; }
+.kip-3-4 { grid-row: 4 / span 2; }
+.kip-4-5 { grid-row: 5 / span 2; }
+.kip-5-6 { grid-row: 6 / span 2; }
+.kip-1-3 { grid-row: 2 / span 3; }
+.kip-4-6 { grid-row: 5 / span 3; }
+
+/* Cot tuong ung voi Thu trong tuan */
+.thu-2 { grid-column: 2; }
+.thu-3 { grid-column: 3; }
+.thu-4 { grid-column: 4; }
+.thu-5 { grid-column: 5; }
+.thu-6 { grid-column: 6; }
+.thu-7 { grid-column: 7; }
+
+/* The hoc phan (card) */
+.hp-found-section { display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; }
+.course-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+.course-card:hover { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); }
+.course-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.course-card-title  { font-size: 1.05rem; color: #202124; }
+.highlight-mahp {
+  color: var(--blue);
+  font-weight: 700;
+  background: #e8f0fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+.highlight-tenhp { color: #1a73e8; }
+.course-card-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-active   { background: #e6f4ea; color: #137333; }
+.badge-inactive { background: #f1f3f4; color: #5f6368; }
+
+.class-list-instruction { font-size: 0.88rem; color: var(--muted); margin-bottom: 12px; font-weight: 500; }
+.class-list-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.class-pill-item {
+  background: #f8f9fa;
+  border: 1.5px solid #dadce0;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  user-select: none;
+}
+.class-pill-item:hover {
+  background: #e8f0fe;
+  border-color: #aecbfa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(26, 115, 232, 0.12);
+}
+.class-pill-item.class-selected {
+  background: #e8f0fe;
+  border-color: var(--blue);
+  color: #1a73e8;
+  box-shadow: 0 0 0 2px rgba(26,115,232,0.2), 0 4px 10px rgba(26,115,232,0.15);
+}
+.class-pill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+.class-pill-code { color: #3c4043; }
+.class-pill-item.class-selected .class-pill-code { color: #185abc; }
+.class-pill-type {
+  background: #e8eaed;
+  color: #5f6368;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.class-pill-item.class-selected .class-pill-type { background: #d2e3fc; color: #1a73e8; }
+.class-pill-program {
+  background: #feefe3;
+  color: #b06000;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.class-pill-item.class-selected .class-pill-program { background: #ffe8d6; }
+.class-pill-schedule {
+  font-size: 0.82rem;
+  color: #5f6368;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.class-pill-item.class-selected .class-pill-schedule { color: #1a73e8; }
+.class-dragging { opacity: 0.5; transform: scale(0.98); }

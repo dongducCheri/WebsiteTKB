@@ -6,5 +6,7 @@ const state = {
   courseMap:       null,
   stats:           null,
   selectedCourses: new Set(),
+  timetableCourses: new Set(), // Courses that are actively showing on the grid
+  timetableRowHeight: 60,      // Default height for the grid rows in pixels (60px works best for 6 kíp layout)
   selectedClasses: {}
 };

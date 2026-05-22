@@ -32,6 +32,17 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault(); exportTxt();
   });
 
+  // Tìm lớp
+  document.getElementById('btn-search').addEventListener('click', () => {
+    const input = document.getElementById('search-input');
+    const val = input.value.trim().toUpperCase();
+    if (val && state.courseMap && state.courseMap[val]) {
+      addChip(val);
+      input.value = '';
+    }
+    renderSearchResults();
+  });
+
   // Lưu
   document.getElementById('link-save').addEventListener('click', e => {
     e.preventDefault();
@@ -56,5 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cached) {
     const courseMap = buildCourseMap(cached.rows);
     onDataReady(cached.rows, courseMap, cached.stats);
+    
+    // Explicitly enable UI elements
+    document.getElementById('search-input').disabled = false;
+    document.getElementById('program-select').disabled = false;
+    document.getElementById('btn-search').disabled = false;
   }
 });
