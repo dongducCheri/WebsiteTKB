@@ -1,5 +1,7 @@
 const STORAGE_KEY_ROWS = 'TKB_ROWS';
 const STORAGE_KEY_META = 'TKB_META';
+const STORAGE_KEY_SELECTED = 'TKB_SELECTED';
+const STORAGE_KEY_COURSES = 'TKB_COURSES';
 
 const state = {
   rows:            null,
