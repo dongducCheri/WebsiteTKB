@@ -32,6 +32,24 @@ function getKip(startMin) {
   return slot ? slot.kip : null;
 }
 
+function getKipSlot(kip) {
+  return KIP_SLOTS.find(s => s.kip === kip) || null;
+}
+
+/** Gán kíp theo giờ bắt đầu; chiều cao thẻ = giờ bắt đầu → giờ kết thúc thực tế (có thể vượt biên kíp). */
+function sessionPositionInKip(startMin, endMin, kip) {
+  const slot = getKipSlot(kip);
+  if (!slot || startMin < slot.from || startMin >= slot.to) return null;
+
+  const topMin = startMin;
+  const botMin = endMin;
+  if (botMin <= topMin) return null;
+
+  const topPct = minutesToPct(topMin);
+  const botPct = minutesToPct(botMin);
+  return { topPct, botPct, heightPct: botPct - topPct };
+}
+
 // Trả về { startMin, endMin } hoặc null nếu không parse được
 function parseSessionTime(thoiGian) {
   if (!thoiGian || !thoiGian.includes('-')) return null;
