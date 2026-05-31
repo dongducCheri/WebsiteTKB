@@ -27,6 +27,35 @@ function findOverlapGroups(dayBlocks) {
   return [...map.values()].filter(g => g.length > 1);
 }
 
+function findBlockForSession(blocks, maHP, thu, kip, isPending, loaiLopKey) {
+  return blocks.find(b => {
+    if (b.maHP !== maHP || b.thu !== thu || b.kip !== kip) return false;
+    if (isPending) return b.isPending;
+    return !b.isPending && b.loaiLopKey === loaiLopKey;
+  });
+}
+
+function formatPendingTypesLabel(subClasses) {
+  const types = [...new Set(subClasses.map(sc => sc.loaiLop).filter(Boolean))];
+  types.sort((a, b) => {
+    const ia = LOAI_LOP_ORDER.indexOf(normalizeLoaiLop(a));
+    const ib = LOAI_LOP_ORDER.indexOf(normalizeLoaiLop(b));
+    const ra = ia === -1 ? 99 : ia;
+    const rb = ib === -1 ? 99 : ib;
+    if (ra !== rb) return ra - rb;
+    return a.localeCompare(b);
+  });
+  return types.join(', ');
+}
+
+function buildPendingBlockHtml(block) {
+  const types = formatPendingTypesLabel(block.subClasses);
+  const count = block.subClasses.length;
+  const prefix = types ? `(${escHtml(types)}) ` : '';
+  const tip = `Có ${count} lớp`;
+  return `<span class="cb-label cb-label--pending" title="${escHtml(tip)}">${prefix}${escHtml(block.tenHP)}</span>`;
+}
+
 function collectCourseBlocks() {
   const blocks = [];
   const program = document.getElementById('program-select').value;
@@ -66,18 +95,17 @@ function collectCourseBlocks() {
         const kip = getKip(timeRange.startMin);
         if (kip === null) return;
 
-        const topPct = minutesToPct(timeRange.startMin);
-        const botPct = minutesToPct(timeRange.endMin);
+        const pos = sessionPositionInKip(timeRange.startMin, timeRange.endMin, kip);
+        if (!pos) return;
+
         const session = { phong: ss.phong || '', tuan: ss.tuan || '', rawRow: ss.rawRow || null };
 
         const loaiLopKey = normalizeLoaiLop(cl.loaiLop);
-        const block = blocks.find(
-          b => b.maHP === maHP && b.thu === thu && b.kip === kip && b.loaiLopKey === loaiLopKey
-        );
+        const block = findBlockForSession(blocks, maHP, thu, kip, isPending, loaiLopKey);
 
         if (block) {
-          if (topPct < block.topPct) block.topPct = topPct;
-          if (botPct > block.botPct) block.botPct = botPct;
+          if (pos.topPct < block.topPct) block.topPct = pos.topPct;
+          if (pos.botPct > block.botPct) block.botPct = pos.botPct;
           block.heightPct = block.botPct - block.topPct;
 
           const sub = block.subClasses.find(sc => sc.maLop === cl.maLop);
@@ -92,8 +120,10 @@ function collectCourseBlocks() {
             maHP, tenHP: course.tenHP,
             loaiLop: cl.loaiLop || '',
             loaiLopKey,
-            thu, kip, topPct, botPct,
-            heightPct: botPct - topPct,
+            thu, kip,
+            topPct: pos.topPct,
+            botPct: pos.botPct,
+            heightPct: pos.heightPct,
             isPending,
             subClasses: [{
               maLop: cl.maLop, maLopKem: cl.maLopKem || '',
@@ -172,10 +202,10 @@ function renderTimetableGrid() {
 
   const blocks = collectCourseBlocks();
 
-  // Annotate blocks với group info (các block chồng nhau trong cùng ngày)
+  // Chỉ gom nhóm chồng giờ cho thẻ đã chọn (pending: 1 thẻ / kíp / học phần)
   let gCounter = 0;
   for (let d = 2; d <= 7; d++) {
-    const dayBlocks = blocks.filter(b => b.thu === d);
+    const dayBlocks = blocks.filter(b => b.thu === d && !b.isPending);
     findOverlapGroups(dayBlocks).forEach(group => {
       const gId = `g${gCounter++}`;
       group.forEach(localIdx => {
@@ -201,37 +231,33 @@ function renderTimetableGrid() {
     timeLabels.forEach(({ label, pct }) => {
       html += `<div class="tt-gridline${label.endsWith(':00') ? ' tt-gl-hour' : ''}" style="top:${pct.toFixed(2)}%"></div>`;
     });
-
     blocks.filter(b => b.thu === d).forEach(block => {
       const sc0 = block.subClasses[0];
       const pendingCls = block.isPending ? ' cb-pending' : '';
 
-      // Label: "(LT, BT, TN) Tên môn" dạng 1 dòng
       let labelHtml = '';
       if (block.isPending) {
-        const types = block.subClasses.map(sc => sc.loaiLop).filter(Boolean).join(', ');
-        const prefix = types ? `(${escHtml(types)}) ` : '';
-        const tip = `Có ${block.subClasses.length} lớp`;
-        labelHtml = `<span class="cb-label" title="${escHtml(tip)}">${prefix}${escHtml(block.tenHP)}</span>`;
+        labelHtml = buildPendingBlockHtml(block);
       } else if (sc0) {
         labelHtml = buildConfirmedBlockHtml(block, sc0);
       }
 
       const confirmedCls = !block.isPending ? ' cb-confirmed' : '';
       const closeBtnHtml = !block.isPending
-        ? `<button class="cb-close-btn" data-close-type="${escHtml(block.loaiLopKey || '')}" title="Bỏ chọn lớp">✕</button>`
+        ? `<button type="button" class="cb-close-btn" data-close-type="${escHtml(block.loaiLopKey || '')}" title="Bỏ chọn lớp" aria-label="Bỏ chọn lớp">×</button>`
         : '';
 
-      // Mũi tên điều hướng nếu block nằm trong nhóm chồng
-      const navHtml = block._gId
+      const navHtml = (!block.isPending && block._gId)
         ? `<div class="cb-nav" data-gid="${escHtml(block._gId)}">
              <button class="cb-nav-btn cb-nav-up" title="Thẻ trên">▲</button>
              <button class="cb-nav-btn cb-nav-dn" title="Thẻ dưới">▼</button>
            </div>`
         : '';
 
+      const zIndex = block.kip;
+
       html += `<div class="course-block${pendingCls}${confirmedCls}"
-        style="top:${block.topPct.toFixed(2)}%;height:${block.heightPct.toFixed(2)}%;z-index:${block.kip}"
+        style="top:${block.topPct.toFixed(2)}%;height:${block.heightPct.toFixed(2)}%;z-index:${zIndex}"
         data-mahp="${escHtml(block.maHP)}"
         data-gid="${escHtml(block._gId || '')}">${closeBtnHtml}${navHtml}${labelHtml}</div>`;
     });
@@ -390,7 +416,7 @@ function showConflictModal(block) {
   modal.innerHTML = `
     <div class="cmodal-box">
       <button class="cmodal-close-x">✕</button>
-      <h2 class="cmodal-title">Thời gian bạn chọn có lớp trùng, xin hãy chọn 1 trong các lớp dưới</h2>
+      <h2 class="cmodal-title">Chọn 1 lớp trong khung giờ này</h2>
       <div class="cmodal-table-wrap">
         <table class="cmodal-table">
           <thead><tr>${headers.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr></thead>
