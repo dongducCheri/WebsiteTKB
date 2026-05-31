@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Export
   document.getElementById('link-export').addEventListener('click', e => {
-    e.preventDefault(); exportTxt();
+    e.preventDefault(); exportPDF();
   });
 
   // Tìm lớp
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('link-save').addEventListener('click', e => {
     e.preventDefault();
     if (!state.rows) { alert('Chưa có dữ liệu để lưu.'); return; }
-    const ok = saveToStorage(state.rows, state.stats);
+    const ok = saveToStorage(state.rows, state.stats, state.selectedClasses, state.timetableCourses);
     alert(ok ? 'Đã lưu vào Browser! Lần sau vào trang sẽ tự load.' : 'Không thể lưu (bộ nhớ đầy).');
   });
 
@@ -66,11 +66,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const cached = loadFromStorage();
   if (cached) {
     const courseMap = buildCourseMap(cached.rows);
+    state.selectedClasses = cached.selectedClasses || {};
+    state.timetableCourses = cached.timetableCourses || new Set();
+    state.timetableCourses.forEach(hp => state.selectedCourses.add(hp));
+    
     onDataReady(cached.rows, courseMap, cached.stats);
     
     // Explicitly enable UI elements
     document.getElementById('search-input').disabled = false;
     document.getElementById('program-select').disabled = false;
     document.getElementById('btn-search').disabled = false;
+    
+    if (typeof renderChips === 'function') renderChips();
+    if (typeof renderSearchResults === 'function') renderSearchResults();
   }
 });
