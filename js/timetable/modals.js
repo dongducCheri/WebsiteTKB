@@ -94,7 +94,7 @@ function showBlockDetailModal(block) {
   modal.addEventListener('click', e => { if (e.target === modal) close(); });
 
   modal.querySelector('.bdetail-deselect-btn').addEventListener('click', () => {
-    removeSelectedClass(block.maHP, sc.loaiLop || block.loaiLop || block.loaiLopKey || '');
+    removeSelectedClass(block.maHP, sc.loaiLop || block.loaiLop || block.loaiLopKey || '', sc.maLop);
     onClassRemovedFromTimetable(block.maHP);
     close();
     refreshSelectionUI();

@@ -48,11 +48,11 @@ function assignOverlapLayout(dayBlocks) {
   });
 }
 
-function findBlockForSession(blocks, maHP, thu, kip, isPending, loaiLopKey) {
+function findBlockForSession(blocks, maHP, thu, kip, isPending, loaiLopKey, maLop) {
   return blocks.find(b => {
     if (b.maHP !== maHP || b.thu !== thu || b.kip !== kip) return false;
     if (isPending) return b.isPending;
-    return !b.isPending && b.loaiLopKey === loaiLopKey;
+    return !b.isPending && b.loaiLopKey === loaiLopKey && b.primaryMaLop === maLop;
   });
 }
 
@@ -68,17 +68,17 @@ function collectCourseBlocks() {
     if (!course) return;
 
     const isEditing = state.editingCourse === maHP;
-    const selectedMap = getSelectedClassMap(maHP);
     let classesArray = Object.values(course.classes).filter(cl => !program || cl.maQL === program);
     classesArray = classesArray.filter(cl => {
-      const selectedLop = getSelectedClassByType(maHP, cl.loaiLop);
-      if (selectedLop) return cl.maLop === selectedLop;
-      return isEditing;
+      if (isEditing) return true;
+      const selectedLops = getSelectedMaLopsForType(maHP, cl.loaiLop);
+      if (selectedLops.length) return selectedLops.includes(cl.maLop);
+      return false;
     });
 
     classesArray.forEach(cl => {
-      const selectedLopForType = selectedMap[normalizeLoaiLop(cl.loaiLop)] || null;
-      const isPending = !selectedLopForType;
+      const selectedLops = getSelectedMaLopsForType(maHP, cl.loaiLop);
+      const isPending = isEditing || !selectedLops.includes(cl.maLop);
 
       cl.sessions.forEach(ss => {
         let thu = ss.thu;
@@ -101,7 +101,7 @@ function collectCourseBlocks() {
         const session = { phong: ss.phong || '', tuan: ss.tuan || '', rawRow: ss.rawRow || null };
 
         const loaiLopKey = normalizeLoaiLop(cl.loaiLop);
-        const block = findBlockForSession(blocks, maHP, thu, kip, isPending, loaiLopKey);
+        const block = findBlockForSession(blocks, maHP, thu, kip, isPending, loaiLopKey, cl.maLop);
 
         if (block) {
           if (pos.topPct < block.topPct) block.topPct = pos.topPct;
@@ -120,6 +120,7 @@ function collectCourseBlocks() {
             maHP, tenHP: course.tenHP,
             loaiLop: cl.loaiLop || '',
             loaiLopKey,
+            primaryMaLop: cl.maLop,
             thu, kip,
             topPct: pos.topPct,
             botPct: pos.botPct,
