@@ -113,21 +113,27 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
-<!-- utils & state phải load trước tất cả -->
-<script src="js/utils.js"></script>
-<script src="js/state.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/parser.js"></script>
-<!-- UI modules -->
-<script src="js/chips.js"></script>
-<script src="js/search.js"></script>
-<script src="js/export.js"></script>
-<script src="js/upload.js"></script>
-<!-- Timetable modules (timeparser trước, timetable sau) -->
-<script src="js/timeparser.js"></script>
-<script src="js/timetable.js"></script>
-<!-- init cuối cùng -->
-<script src="js/results.js"></script>
+<!-- core: state & lưu trữ (utils trước state) -->
+<script src="js/core/utils.js"></script>
+<script src="js/core/state.js"></script>
+<script src="js/core/storage.js"></script>
+<!-- data: đọc Excel, upload -->
+<script src="js/data/parser.js"></script>
+<script src="js/data/upload.js"></script>
+<!-- courses: tìm HP, chip, danh sách lớp (results sau timetable) -->
+<script src="js/courses/chips.js"></script>
+<script src="js/courses/search.js"></script>
+<!-- export PDF -->
+<script src="js/export/export.js"></script>
+<!-- timetable -->
+<script src="js/timetable/timeparser.js"></script>
+<script src="js/timetable/collect.js"></script>
+<script src="js/timetable/blocks.js"></script>
+<script src="js/timetable/modals.js"></script>
+<script src="js/timetable/events.js"></script>
+<script src="js/timetable/render.js"></script>
+<script src="js/courses/results.js"></script>
+<!-- init -->
 <script src="js/app.js"></script>
 </body>
 </html>
