@@ -31,17 +31,26 @@ function collectCourseBlocks() {
   const blocks = [];
   const program = document.getElementById('program-select').value;
 
-  state.timetableCourses.forEach(maHP => {
+  const coursesOnGrid = new Set(state.timetableCourses);
+  if (state.editingCourse) coursesOnGrid.add(state.editingCourse);
+
+  coursesOnGrid.forEach(maHP => {
     const course = state.courseMap[maHP];
     if (!course) return;
 
-    const selectedLop = state.selectedClasses[maHP] || null;
+    const isEditing = state.editingCourse === maHP;
+    const selectedMap = getSelectedClassMap(maHP);
     let classesArray = Object.values(course.classes).filter(cl => !program || cl.maQL === program);
-    if (selectedLop) classesArray = classesArray.filter(cl => cl.maLop === selectedLop);
-
-    const isPending = !selectedLop;
+    classesArray = classesArray.filter(cl => {
+      const selectedLop = getSelectedClassByType(maHP, cl.loaiLop);
+      if (selectedLop) return cl.maLop === selectedLop;
+      return isEditing;
+    });
 
     classesArray.forEach(cl => {
+      const selectedLopForType = selectedMap[normalizeLoaiLop(cl.loaiLop)] || null;
+      const isPending = !selectedLopForType;
+
       cl.sessions.forEach(ss => {
         let thu = ss.thu;
         if (typeof thu === 'string') {
@@ -61,7 +70,10 @@ function collectCourseBlocks() {
         const botPct = minutesToPct(timeRange.endMin);
         const session = { phong: ss.phong || '', tuan: ss.tuan || '', rawRow: ss.rawRow || null };
 
-        const block = blocks.find(b => b.maHP === maHP && b.thu === thu && b.kip === kip);
+        const loaiLopKey = normalizeLoaiLop(cl.loaiLop);
+        const block = blocks.find(
+          b => b.maHP === maHP && b.thu === thu && b.kip === kip && b.loaiLopKey === loaiLopKey
+        );
 
         if (block) {
           if (topPct < block.topPct) block.topPct = topPct;
@@ -78,6 +90,8 @@ function collectCourseBlocks() {
         } else {
           blocks.push({
             maHP, tenHP: course.tenHP,
+            loaiLop: cl.loaiLop || '',
+            loaiLopKey,
             thu, kip, topPct, botPct,
             heightPct: botPct - topPct,
             isPending,
@@ -163,6 +177,10 @@ function renderTimetableGrid() {
         if (rooms)     labelHtml += `<span class="cb-details">${escHtml(rooms)}</span>`;
       }
 
+      const closeBtnHtml = !block.isPending
+        ? `<button class="cb-close-btn" data-close-type="${escHtml(block.loaiLopKey || '')}" title="Bỏ chọn lớp">✕</button>`
+        : '';
+
       // Mũi tên điều hướng nếu block nằm trong nhóm chồng
       const navHtml = block._gId
         ? `<div class="cb-nav" data-gid="${escHtml(block._gId)}">
@@ -174,7 +192,7 @@ function renderTimetableGrid() {
       html += `<div class="course-block${pendingCls}"
         style="top:${block.topPct.toFixed(2)}%;height:${block.heightPct.toFixed(2)}%;z-index:${block.kip}"
         data-mahp="${escHtml(block.maHP)}"
-        data-gid="${escHtml(block._gId || '')}">${navHtml}${labelHtml}</div>`;
+        data-gid="${escHtml(block._gId || '')}">${closeBtnHtml}${navHtml}${labelHtml}</div>`;
     });
 
     html += `</div>`;
@@ -248,14 +266,22 @@ function setupBlockInteractions(gridContainer, domBlocks) {
       applyGroupZIndex(gId);
     });
 
+    el.querySelector('.cb-close-btn')?.addEventListener('click', e => {
+      e.stopPropagation();
+      removeSelectedClass(block.maHP, block.loaiLop || block.loaiLopKey || '');
+      onClassRemovedFromTimetable(block.maHP);
+      refreshSelectionUI();
+    });
+
     // Click vào block (chọn lớp / xem chi tiết)
     el.addEventListener('click', e => {
       e.stopPropagation();
 
       if (block.isPending) {
         if (block.subClasses.length === 1) {
-          state.selectedClasses[block.maHP] = block.subClasses[0].maLop;
-          renderTimetableGrid();
+          setSelectedClass(block.maHP, block.subClasses[0].loaiLop || block.loaiLop, block.subClasses[0].maLop);
+          onClassPicked(block.maHP);
+          refreshSelectionUI();
         } else {
           showConflictModal(block);
         }
@@ -313,9 +339,11 @@ function showConflictModal(block) {
 
   modal.querySelectorAll('.conflict-row').forEach(row => {
     row.addEventListener('click', () => {
-      state.selectedClasses[row.dataset.mahp] = row.dataset.malop;
+      const selectedClass = block.subClasses.find(sc => sc.maLop === row.dataset.malop);
+      setSelectedClass(row.dataset.mahp, selectedClass?.loaiLop || block.loaiLop, row.dataset.malop);
+      onClassPicked(row.dataset.mahp);
       close();
-      renderTimetableGrid();
+      refreshSelectionUI();
     });
   });
 }
@@ -361,9 +389,10 @@ function showBlockDetailModal(block) {
   modal.addEventListener('click', e => { if (e.target === modal) close(); });
 
   modal.querySelector('.bdetail-deselect-btn').addEventListener('click', () => {
-    delete state.selectedClasses[block.maHP];
+    removeSelectedClass(block.maHP, sc.loaiLop || block.loaiLop || block.loaiLopKey || '');
+    onClassRemovedFromTimetable(block.maHP);
     close();
-    renderTimetableGrid();
+    refreshSelectionUI();
   });
 }
 
@@ -384,10 +413,9 @@ function setupTimetableDrop(gridContainer) {
     e.preventDefault();
     ttWrap.classList.remove('tt-drag-over');
     const maHP = e.dataTransfer.getData('text/plain');
-    if (maHP && state.courseMap[maHP] && !state.timetableCourses.has(maHP)) {
-      state.timetableCourses.add(maHP);
-      updateChipStyles();
-      renderTimetableGrid();
+    if (maHP && state.courseMap[maHP]) {
+      startEditingCourse(maHP);
+      refreshSelectionUI();
     }
   });
 }
