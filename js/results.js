@@ -33,13 +33,17 @@ function renderSearchResults() {
   if (found.length > 0) {
     html += `<div class="hp-found-list">`;
     found.forEach(c => {
-      const active = state.timetableCourses.has(c.maHP);
+      const picked = formatSelectedTypesLabel(c.maHP);
+      const active = state.editingCourse === c.maHP ||
+        (state.timetableCourses.has(c.maHP) && hasSelectedClasses(c.maHP));
+      const editing = state.editingCourse === c.maHP;
       html += `
-        <span class="hp-item ${active ? 'hp-active' : ''}"
+        <span class="hp-item ${active ? 'hp-active' : ''} ${editing ? 'hp-editing' : ''}"
               draggable="true"
               data-mahp="${escHtml(c.maHP)}"
-              title="Click hoặc kéo thả vào bảng TKB">
-          <b>${escHtml(c.maHP)}</b>: ${escHtml(c.tenHP)}
+              title="Click để chọn / chọn thêm lớp trên bảng TKB">
+          <span class="hp-item-title"><b>${escHtml(c.maHP)}</b>: ${escHtml(c.tenHP)}</span>
+          ${picked ? `<span class="hp-picked-note">Đã chọn: ${escHtml(picked)}</span>` : ''}
         </span>`;
     });
     html += `</div>`;
@@ -66,19 +70,12 @@ function renderSearchResults() {
   container.querySelectorAll('.hp-item').forEach(el => {
     el.addEventListener('click', () => {
       const maHP = el.dataset.mahp;
-      if (state.timetableCourses.has(maHP)) {
-        // Toggle off — bỏ chọn học phần đang active
-        state.timetableCourses.delete(maHP);
-        delete state.selectedClasses[maHP];
+      if (state.editingCourse === maHP) {
+        stopEditingCourse();
       } else {
-        // Xóa các học phần đang pending (chưa chọn lớp) để chỉ 1 học phần pending tại 1 thời điểm.
-        // Các học phần đã chọn lớp rồi thì giữ nguyên.
-        state.timetableCourses.forEach(hp => {
-          if (!state.selectedClasses[hp]) state.timetableCourses.delete(hp);
-        });
-        state.timetableCourses.add(maHP);
+        startEditingCourse(maHP);
       }
-      updateChipStyles();
+      refreshHpItemUI();
       renderTimetableGrid();
     });
 
@@ -102,17 +99,44 @@ function renderSearchResults() {
     });
   }
 
+  if (typeof refreshTopChipsUI === 'function') refreshTopChipsUI();
   renderTimetableGrid();
 }
 
 function updateChipStyles() {
+  refreshHpItemUI();
+}
+
+function refreshHpItemUI() {
   document.querySelectorAll('.hp-item').forEach(el => {
-    el.classList.toggle('hp-active', state.timetableCourses.has(el.dataset.mahp));
+    const maHP = el.dataset.mahp;
+    if (!maHP) return;
+
+    const picked = formatSelectedTypesLabel(maHP);
+    let note = el.querySelector('.hp-picked-note');
+    if (picked) {
+      if (!note) {
+        note = document.createElement('span');
+        note.className = 'hp-picked-note';
+        el.appendChild(note);
+      }
+      note.textContent = `Đã chọn: ${picked}`;
+    } else if (note) {
+      note.remove();
+    }
+
+    const active = state.editingCourse === maHP ||
+      (state.timetableCourses.has(maHP) && hasSelectedClasses(maHP));
+    el.classList.toggle('hp-active', active);
+    el.classList.toggle('hp-editing', state.editingCourse === maHP);
   });
 }
 
 function pickClass(maHP, maLop) {
-  state.selectedClasses[maHP] = maLop;
+  const course = state.courseMap?.[maHP];
+  const cls = course?.classes?.[maLop];
+  setSelectedClass(maHP, cls?.loaiLop || '', maLop);
+  onClassPicked(maHP);
   alert(`Đã chọn lớp ${maLop} cho học phần ${maHP}`);
-  renderTimetableGrid();
+  refreshSelectionUI();
 }

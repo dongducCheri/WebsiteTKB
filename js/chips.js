@@ -6,8 +6,9 @@ function addChip(maHP) {
 
 function removeChip(maHP) {
   state.selectedCourses.delete(maHP);
-  delete state.selectedClasses[maHP];
+  clearSelectedClasses(maHP);
   state.timetableCourses.delete(maHP);
+  if (state.editingCourse === maHP) state.editingCourse = null;
   renderChips();
   
   const resultsEl = document.getElementById('results');
@@ -18,17 +19,30 @@ function removeChip(maHP) {
 
 function renderChips() {
   const el = document.getElementById('chip-list');
+  if (!el) return;
+
   if (state.selectedCourses.size === 0) {
     el.innerHTML = '';
     return;
   }
+
   el.innerHTML = [...state.selectedCourses].map(maHP => {
     const course = state.courseMap?.[maHP];
-    const label  = course ? `${escHtml(maHP)} - ${escHtml(course.tenHP)}` : escHtml(maHP);
-    return `<span class="chip">${label} <span class="chip-x" data-mahp="${escHtml(maHP)}">✕</span></span>`;
+    const title = course
+      ? `<span class="chip-title">${escHtml(maHP)}: ${escHtml(course.tenHP)}</span>`
+      : `<span class="chip-title">${escHtml(maHP)}</span>`;
+
+    return `<span class="chip" data-mahp="${escHtml(maHP)}">${title}<span class="chip-x" data-mahp="${escHtml(maHP)}">✕</span></span>`;
   }).join('');
 
   el.querySelectorAll('.chip-x').forEach(btn => {
-    btn.addEventListener('click', () => removeChip(btn.dataset.mahp));
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      removeChip(btn.dataset.mahp);
+    });
   });
+}
+
+function refreshTopChipsUI() {
+  renderChips();
 }
