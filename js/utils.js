@@ -115,3 +115,66 @@ function refreshSelectionUI() {
   if (typeof refreshHpItemUI === 'function') refreshHpItemUI();
   if (typeof renderTimetableGrid === 'function') renderTimetableGrid();
 }
+
+function normalizeMaLopCode(code) {
+  const s = String(code ?? '').trim();
+  if (!s || /^null$/i.test(s) || s === '—' || s === '-') return '';
+  return s;
+}
+
+function isMaLopSelected(maHP, maLop) {
+  const code = normalizeMaLopCode(maLop);
+  if (!code) return false;
+  return Object.values(getSelectedClassMap(maHP)).includes(code);
+}
+
+function findClassInCourse(maHP, maLop) {
+  const course = state.courseMap?.[maHP];
+  if (!course) return null;
+  const code = normalizeMaLopCode(maLop);
+  if (!code) return null;
+  if (course.classes[code]) return course.classes[code];
+  return Object.values(course.classes).find(cl => cl.maLop === code) || null;
+}
+
+async function copyMaLopToClipboard(maLop) {
+  const code = normalizeMaLopCode(maLop);
+  if (!code) return false;
+  try {
+    await navigator.clipboard.writeText(code);
+    return true;
+  } catch {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = code;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+}
+
+function addCompanionClass(maHP, maLopKem) {
+  const cls = findClassInCourse(maHP, maLopKem);
+  if (!cls) {
+    alert(`Không tìm thấy lớp có mã ${maLopKem} trong học phần ${maHP}.`);
+    return false;
+  }
+  if (isMaLopSelected(maHP, cls.maLop)) return true;
+
+  setSelectedClass(maHP, cls.loaiLop, cls.maLop);
+  if (state.selectedCourses && !state.selectedCourses.has(maHP)) {
+    state.selectedCourses.add(maHP);
+  }
+  state.timetableCourses.add(maHP);
+  onClassPicked(maHP);
+  refreshSelectionUI();
+  return true;
+}

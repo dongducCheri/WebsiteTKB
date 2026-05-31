@@ -109,6 +109,50 @@ function collectCourseBlocks() {
   return blocks;
 }
 
+function formatBlockRoomWeek(subSessions) {
+  const rooms = [...new Set(subSessions.map(s => s.phong).filter(Boolean))];
+  const tuans = [...new Set(subSessions.map(s => s.tuan).filter(Boolean))];
+  if (!rooms.length && !tuans.length) return '';
+  let text = rooms.length ? `Phòng: ${rooms.join(', ')}` : 'Phòng: —';
+  if (tuans.length) text += ` (Tuần ${tuans.join(', ')})`;
+  return text;
+}
+
+function buildKemPillHtml(maHP, sc) {
+  const kem = normalizeMaLopCode(sc.maLopKem);
+  if (!kem || kem === normalizeMaLopCode(sc.maLop)) {
+    return `<span class="cb-pill cb-pill--null" title="Không có mã lớp kèm">NULL</span>`;
+  }
+  const picked = isMaLopSelected(maHP, kem);
+  const cls = picked ? 'cb-pill cb-pill--selected cb-kem-btn' : 'cb-pill cb-kem-btn';
+  const check = picked ? '<span class="cb-pill-check" aria-hidden="true">✓</span>' : '';
+  const title = picked
+    ? 'Lớp kèm đã có trên TKB'
+    : 'Thêm lớp kèm vào thời khóa biểu';
+  return `<button type="button" class="${cls}" data-mahp="${escHtml(maHP)}" data-malop-kem="${escHtml(kem)}" title="${escHtml(title)}" ${picked ? 'disabled' : ''}><span class="cb-pill-code">${escHtml(kem)}</span>${check}</button>`;
+}
+
+function buildConfirmedBlockHtml(block, sc) {
+  const loai = sc.loaiLop ? ` (${escHtml(sc.loaiLop)})` : '';
+  const roomWeek = formatBlockRoomWeek(sc.subSessions);
+  return `
+    <div class="cb-card">
+      <div class="cb-title">${escHtml(block.tenHP)}${loai}</div>
+      <div class="cb-row">
+        <span class="cb-row-lbl">Mã lớp:</span>
+        <button type="button" class="cb-pill cb-pill--selected cb-copy-btn" data-copy-malop="${escHtml(sc.maLop)}" title="Click để copy mã lớp">
+          <span class="cb-pill-code">${escHtml(sc.maLop)}</span>
+          <span class="cb-pill-check" aria-hidden="true">✓</span>
+        </button>
+      </div>
+      <div class="cb-row">
+        <span class="cb-row-lbl">Mã lớp kèm:</span>
+        ${buildKemPillHtml(block.maHP, sc)}
+      </div>
+      ${roomWeek ? `<div class="cb-room">${escHtml(roomWeek)}</div>` : ''}
+    </div>`;
+}
+
 function renderTimetableGrid() {
   const gridContainer = document.getElementById('timetable-grid-container');
   if (!gridContainer) return;
@@ -170,13 +214,10 @@ function renderTimetableGrid() {
         const tip = `Có ${block.subClasses.length} lớp`;
         labelHtml = `<span class="cb-label" title="${escHtml(tip)}">${prefix}${escHtml(block.tenHP)}</span>`;
       } else if (sc0) {
-        const rooms = [...new Set(sc0.subSessions.map(s => s.phong).filter(Boolean))].join(', ');
-        const prefix = sc0.loaiLop ? `(${escHtml(sc0.loaiLop)}) ` : '';
-        labelHtml  = `<span class="cb-label">${prefix}${escHtml(block.tenHP)}</span>`;
-        if (sc0.maLop) labelHtml += `<span class="cb-details">${escHtml(sc0.maLop)}</span>`;
-        if (rooms)     labelHtml += `<span class="cb-details">${escHtml(rooms)}</span>`;
+        labelHtml = buildConfirmedBlockHtml(block, sc0);
       }
 
+      const confirmedCls = !block.isPending ? ' cb-confirmed' : '';
       const closeBtnHtml = !block.isPending
         ? `<button class="cb-close-btn" data-close-type="${escHtml(block.loaiLopKey || '')}" title="Bỏ chọn lớp">✕</button>`
         : '';
@@ -189,7 +230,7 @@ function renderTimetableGrid() {
            </div>`
         : '';
 
-      html += `<div class="course-block${pendingCls}"
+      html += `<div class="course-block${pendingCls}${confirmedCls}"
         style="top:${block.topPct.toFixed(2)}%;height:${block.heightPct.toFixed(2)}%;z-index:${block.kip}"
         data-mahp="${escHtml(block.maHP)}"
         data-gid="${escHtml(block._gId || '')}">${closeBtnHtml}${navHtml}${labelHtml}</div>`;
@@ -273,8 +314,39 @@ function setupBlockInteractions(gridContainer, domBlocks) {
       refreshSelectionUI();
     });
 
+    el.querySelectorAll('.cb-kem-btn:not(:disabled)').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        addCompanionClass(btn.dataset.mahp, btn.dataset.malopKem);
+      });
+    });
+
+    el.querySelectorAll('.cb-copy-btn').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const ok = await copyMaLopToClipboard(btn.dataset.copyMalop);
+        const prev = btn.title;
+        btn.title = ok ? 'Đã copy!' : 'Không copy được';
+        setTimeout(() => { btn.title = prev; }, 1200);
+      });
+    });
+
+    const scrollCard = el.querySelector('.cb-card');
+    if (scrollCard && el.classList.contains('cb-confirmed')) {
+      el.addEventListener('wheel', e => {
+        if (scrollCard.scrollHeight <= scrollCard.clientHeight) return;
+        const atTop = scrollCard.scrollTop <= 0;
+        const atBottom = scrollCard.scrollTop + scrollCard.clientHeight >= scrollCard.scrollHeight - 1;
+        if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        scrollCard.scrollTop += e.deltaY;
+      }, { passive: false });
+    }
+
     // Click vào block (chọn lớp / xem chi tiết)
     el.addEventListener('click', e => {
+      if (e.target.closest('.cb-close-btn, .cb-kem-btn, .cb-copy-btn, .cb-nav, .cb-nav-btn')) return;
       e.stopPropagation();
 
       if (block.isPending) {
