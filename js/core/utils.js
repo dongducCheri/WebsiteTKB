@@ -16,54 +16,85 @@ function getSelectedClassMap(maHP) {
   if (!raw) return {};
 
   if (typeof raw === 'string') {
-    // Backward compatibility: dữ liệu cũ chỉ lưu 1 mã lớp cho cả học phần
-    return { __LEGACY__: raw };
+    return { __LEGACY__: [raw] };
   }
 
-  if (typeof raw === 'object') return raw;
+  if (typeof raw === 'object') {
+    const normalized = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (Array.isArray(v)) normalized[k] = v.filter(Boolean);
+      else if (typeof v === 'string' && v) normalized[k] = [v];
+    }
+    return normalized;
+  }
   return {};
+}
+
+function getSelectedMaLopsForType(maHP, loaiLop) {
+  const map = getSelectedClassMap(maHP);
+  const key = normalizeLoaiLop(loaiLop);
+  if (map[key]?.length) return map[key];
+  if (map.__LEGACY__?.length) return map.__LEGACY__;
+  return [];
 }
 
 function hasSelectedClasses(maHP) {
   const map = getSelectedClassMap(maHP);
-  return Object.keys(map).length > 0;
+  return Object.values(map).some(arr => arr.length > 0);
 }
 
 function getSelectedLoaiLops(maHP) {
   const map = getSelectedClassMap(maHP);
-  return Object.keys(map).filter(k => k !== '__LEGACY__');
+  return Object.keys(map).filter(k => k !== '__LEGACY__' && map[k]?.length > 0);
 }
 
 function getSelectedClassByType(maHP, loaiLop) {
-  const map = getSelectedClassMap(maHP);
-  const key = normalizeLoaiLop(loaiLop);
-  if (map[key]) return map[key];
-  return map.__LEGACY__ || null;
+  const list = getSelectedMaLopsForType(maHP, loaiLop);
+  return list[0] || null;
 }
 
-function getBlockStackKey(maHP, loaiLop) {
-  return `${maHP}|${normalizeLoaiLop(loaiLop)}`;
+function getBlockStackKey(maHP, loaiLop, maLop) {
+  const loai = normalizeLoaiLop(loaiLop);
+  if (maLop) return `${maHP}|${loai}|${maLop}`;
+  return `${maHP}|${loai}`;
 }
 
-function recordBlockPickOrder(maHP, loaiLop) {
+function recordBlockPickOrder(maHP, loaiLop, maLop) {
   if (!state.timetableBlockOrder) state.timetableBlockOrder = [];
-  const key = getBlockStackKey(maHP, loaiLop);
+  const key = getBlockStackKey(maHP, loaiLop, maLop);
   const i = state.timetableBlockOrder.indexOf(key);
   if (i !== -1) state.timetableBlockOrder.splice(i, 1);
   state.timetableBlockOrder.push(key);
 }
 
-function removeBlockPickOrder(maHP, loaiLop) {
+function removeBlockPickOrder(maHP, loaiLop, maLop) {
   if (!state.timetableBlockOrder) return;
-  const key = getBlockStackKey(maHP, loaiLop);
-  const i = state.timetableBlockOrder.indexOf(key);
-  if (i !== -1) state.timetableBlockOrder.splice(i, 1);
-  if (state.timetableBlockShift) delete state.timetableBlockShift[key];
+  const loai = normalizeLoaiLop(loaiLop);
+  const prefix = `${maHP}|${loai}`;
+
+  if (maLop) {
+    const key = getBlockStackKey(maHP, loaiLop, maLop);
+    const i = state.timetableBlockOrder.indexOf(key);
+    if (i !== -1) state.timetableBlockOrder.splice(i, 1);
+    if (state.timetableBlockShift) delete state.timetableBlockShift[key];
+    return;
+  }
+
+  state.timetableBlockOrder = state.timetableBlockOrder.filter(k => !k.startsWith(prefix + '|') && k !== prefix);
+  if (state.timetableBlockShift) {
+    Object.keys(state.timetableBlockShift).forEach(k => {
+      if (k.startsWith(prefix + '|') || k === prefix) delete state.timetableBlockShift[k];
+    });
+  }
 }
 
 function getBlockPickOrder(block) {
   if (!state.timetableBlockOrder?.length) return 0;
-  const key = getBlockStackKey(block.maHP, block.loaiLopKey || block.loaiLop);
+  const key = getBlockStackKey(
+    block.maHP,
+    block.loaiLopKey || block.loaiLop,
+    block.primaryMaLop
+  );
   const idx = state.timetableBlockOrder.indexOf(key);
   return idx === -1 ? 0 : idx;
 }
@@ -71,20 +102,24 @@ function getBlockPickOrder(block) {
 function rebuildBlockOrderFromSelection() {
   state.timetableBlockOrder = [];
   [...state.timetableCourses].forEach(maHP => {
-    getSelectedLoaiLops(maHP).forEach(loaiKey => recordBlockPickOrder(maHP, loaiKey));
+    getSelectedLoaiLops(maHP).forEach(loaiKey => {
+      getSelectedMaLopsForType(maHP, loaiKey).forEach(maLop => {
+        recordBlockPickOrder(maHP, loaiKey, maLop);
+      });
+    });
   });
 }
 
 const BLOCK_SHIFT_STEP_PX = 12;
 
 function getBlockShift(block) {
-  const key = getBlockStackKey(block.maHP, block.loaiLopKey || block.loaiLop);
+  const key = getBlockStackKey(block.maHP, block.loaiLopKey || block.loaiLop, block.primaryMaLop);
   return state.timetableBlockShift?.[key] ?? 0;
 }
 
-function setBlockShift(maHP, loaiLop, steps) {
+function setBlockShift(maHP, loaiLop, steps, maLop) {
   if (!state.timetableBlockShift) state.timetableBlockShift = {};
-  const key = getBlockStackKey(maHP, loaiLop);
+  const key = getBlockStackKey(maHP, loaiLop, maLop);
   if (steps === 0) delete state.timetableBlockShift[key];
   else state.timetableBlockShift[key] = steps;
 }
@@ -103,16 +138,25 @@ function setSelectedClass(maHP, loaiLop, maLop) {
   const map = getSelectedClassMap(maHP);
   const key = normalizeLoaiLop(loaiLop);
   if (map.__LEGACY__) delete map.__LEGACY__;
-  map[key] = maLop;
+  if (!map[key]) map[key] = [];
+  if (!map[key].includes(maLop)) map[key].push(maLop);
   state.selectedClasses[maHP] = map;
-  recordBlockPickOrder(maHP, loaiLop);
+  recordBlockPickOrder(maHP, loaiLop, maLop);
 }
 
-function removeSelectedClass(maHP, loaiLop) {
+function removeSelectedClass(maHP, loaiLop, maLop) {
   const map = getSelectedClassMap(maHP);
-  delete map[normalizeLoaiLop(loaiLop)];
+  const key = normalizeLoaiLop(loaiLop);
   delete map.__LEGACY__;
-  removeBlockPickOrder(maHP, loaiLop);
+
+  if (maLop && map[key]) {
+    map[key] = map[key].filter(m => m !== maLop);
+    if (map[key].length === 0) delete map[key];
+    removeBlockPickOrder(maHP, loaiLop, maLop);
+  } else {
+    delete map[key];
+    removeBlockPickOrder(maHP, loaiLop, maLop);
+  }
 
   if (Object.keys(map).length === 0) delete state.selectedClasses[maHP];
   else state.selectedClasses[maHP] = map;
@@ -185,7 +229,8 @@ function normalizeMaLopCode(code) {
 function isMaLopSelected(maHP, maLop) {
   const code = normalizeMaLopCode(maLop);
   if (!code) return false;
-  return Object.values(getSelectedClassMap(maHP)).includes(code);
+  const map = getSelectedClassMap(maHP);
+  return Object.values(map).some(arr => arr.includes(code));
 }
 
 function findClassInCourse(maHP, maLop) {

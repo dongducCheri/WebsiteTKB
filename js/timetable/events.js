@@ -24,31 +24,33 @@ function setupBlockInteractions(gridContainer, domBlocks) {
     if (!block) return;
 
     const loaiKey = block.loaiLopKey || block.loaiLop || '';
+    const maLop = block.primaryMaLop || block.subClasses[0]?.maLop;
 
     el.querySelector('.cb-shift-left')?.addEventListener('click', e => {
       e.stopPropagation();
       const next = getBlockShift(block) - 1;
-      setBlockShift(block.maHP, loaiKey, next);
+      setBlockShift(block.maHP, loaiKey, next, maLop);
       applyBlockShiftToEl(el, block);
     });
 
     el.querySelector('.cb-shift-right')?.addEventListener('click', e => {
       e.stopPropagation();
       const next = getBlockShift(block) + 1;
-      setBlockShift(block.maHP, loaiKey, next);
+      setBlockShift(block.maHP, loaiKey, next, maLop);
       applyBlockShiftToEl(el, block);
     });
 
     el.querySelector('.cb-shift-center')?.addEventListener('dblclick', e => {
       e.stopPropagation();
       e.preventDefault();
-      setBlockShift(block.maHP, loaiKey, 0);
+      setBlockShift(block.maHP, loaiKey, 0, maLop);
       applyBlockShiftToEl(el, block);
     });
 
     el.querySelector('.cb-close-btn')?.addEventListener('click', e => {
       e.stopPropagation();
-      removeSelectedClass(block.maHP, block.loaiLop || block.loaiLopKey || '');
+      const code = block.primaryMaLop || block.subClasses[0]?.maLop;
+      removeSelectedClass(block.maHP, block.loaiLop || block.loaiLopKey || '', code);
       onClassRemovedFromTimetable(block.maHP);
       refreshSelectionUI();
     });
@@ -95,7 +97,8 @@ function setupBlockInteractions(gridContainer, domBlocks) {
 
       if (block.isPending) {
         if (block.subClasses.length === 1) {
-          setSelectedClass(block.maHP, block.subClasses[0].loaiLop || block.loaiLop, block.subClasses[0].maLop);
+          const sc = block.subClasses[0];
+          setSelectedClass(block.maHP, sc.loaiLop || block.loaiLop, sc.maLop);
           onClassPicked(block.maHP);
           refreshSelectionUI();
         } else {

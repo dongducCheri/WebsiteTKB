@@ -29,11 +29,23 @@ function exportPDF() {
   `;
 
   let stt = 1;
-  for (const [maHP, maLop] of Object.entries(state.selectedClasses)) {
+  for (const [maHP, typeMap] of Object.entries(state.selectedClasses)) {
     const course = state.courseMap[maHP];
     if (!course) continue;
-    const cls = course.classes[maLop];
-    if (!cls) continue;
+
+    const entries = typeof typeMap === 'string'
+      ? [{ loaiLop: '', maLop: typeMap }]
+      : Object.entries(typeMap).flatMap(([loaiKey, val]) => {
+          const maLops = Array.isArray(val) ? val : [val];
+          return maLops.filter(Boolean).map(maLop => ({
+            loaiLop: loaiKey === '__LEGACY__' ? '' : loaiKey,
+            maLop
+          }));
+        });
+
+    for (const { loaiLop, maLop } of entries) {
+      const cls = course.classes[maLop];
+      if (!cls) continue;
 
     const formatTime = (t) => {
       if (!t || !t.includes('-')) return t;
@@ -54,10 +66,11 @@ function exportPDF() {
         <td style="border: 1px solid #ddd; padding: 10px;">${course.tenHP}</td>
         <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${maLop}</td>
         <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${cls.maLopKem || ''}</td>
-        <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${cls.loaiLop}</td>
+        <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${cls.loaiLop || loaiLop}</td>
         <td style="border: 1px solid #ddd; padding: 10px;">${sessionsStr}</td>
       </tr>
     `;
+    }
   }
 
   html += '</tbody></table></div>';
