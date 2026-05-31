@@ -17,16 +17,8 @@ function renderTimetableGrid() {
 
   const blocks = collectCourseBlocks();
 
-  let gCounter = 0;
   for (let d = 2; d <= 7; d++) {
-    const dayBlocks = blocks.filter(b => b.thu === d && !b.isPending);
-    findOverlapGroups(dayBlocks).forEach(group => {
-      const gId = `g${gCounter++}`;
-      group.forEach(localIdx => {
-        dayBlocks[localIdx]._gId   = gId;
-        dayBlocks[localIdx]._gSize = group.length;
-      });
-    });
+    assignOverlapLayout(blocks.filter(b => b.thu === d && !b.isPending));
   }
 
   let html = `<div class="tt-wrap" style="--tt-height:${totalHeight}px">`;
@@ -45,7 +37,9 @@ function renderTimetableGrid() {
     timeLabels.forEach(({ label, pct }) => {
       html += `<div class="tt-gridline${label.endsWith(':00') ? ' tt-gl-hour' : ''}" style="top:${pct.toFixed(2)}%"></div>`;
     });
-    blocks.filter(b => b.thu === d).forEach(block => {
+    blocks.filter(b => b.thu === d)
+      .sort((a, b) => getBlockPickOrder(a) - getBlockPickOrder(b))
+      .forEach(block => {
       const sc0 = block.subClasses[0];
       const pendingCls = block.isPending ? ' cb-pending' : '';
 
@@ -61,19 +55,17 @@ function renderTimetableGrid() {
         ? `<button type="button" class="cb-close-btn" data-close-type="${escHtml(block.loaiLopKey || '')}" title="Bỏ chọn lớp" aria-label="Bỏ chọn lớp">×</button>`
         : '';
 
-      const navHtml = (!block.isPending && block._gId)
-        ? `<div class="cb-nav" data-gid="${escHtml(block._gId)}">
-             <button class="cb-nav-btn cb-nav-up" title="Thẻ trên">▲</button>
-             <button class="cb-nav-btn cb-nav-dn" title="Thẻ dưới">▼</button>
-           </div>`
-        : '';
+      const shiftBarHtml = !block.isPending ? buildConfirmedShiftBarHtml() : '';
 
-      const zIndex = block.kip;
+      const overlapCls = block._gId ? ' cb-overlap' : '';
+      const posStyle = block._gId
+        ? `left:${block._overlapLeft}%;right:${block._overlapRight}%;z-index:${block._stackZ}`
+        : `left:0;right:0;z-index:${block.kip}`;
 
-      html += `<div class="course-block${pendingCls}${confirmedCls}"
-        style="top:${block.topPct.toFixed(2)}%;height:${block.heightPct.toFixed(2)}%;z-index:${zIndex}"
+      html += `<div class="course-block${pendingCls}${confirmedCls}${overlapCls}"
+        style="top:${block.topPct.toFixed(2)}%;height:${block.heightPct.toFixed(2)}%;${posStyle}${blockShiftStyle(block)}"
         data-mahp="${escHtml(block.maHP)}"
-        data-gid="${escHtml(block._gId || '')}">${closeBtnHtml}${navHtml}${labelHtml}</div>`;
+        data-gid="${escHtml(block._gId || '')}">${closeBtnHtml}${labelHtml}${shiftBarHtml}</div>`;
     });
 
     html += `</div>`;
@@ -82,7 +74,9 @@ function renderTimetableGrid() {
   html += `</div></div>`;
 
   const domBlocks = [];
-  for (let d = 2; d <= 7; d++) domBlocks.push(...blocks.filter(b => b.thu === d));
+  for (let d = 2; d <= 7; d++) {
+    domBlocks.push(...blocks.filter(b => b.thu === d).sort((a, b) => getBlockPickOrder(a) - getBlockPickOrder(b)));
+  }
 
   gridContainer.innerHTML = html;
   setupBlockInteractions(gridContainer, domBlocks);

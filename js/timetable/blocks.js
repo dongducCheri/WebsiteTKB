@@ -61,3 +61,11 @@ function buildConfirmedBlockHtml(block, sc) {
       ${roomWeek ? `<div class="cb-room">${escHtml(roomWeek)}</div>` : ''}
     </div>`;
 }
+
+function buildConfirmedShiftBarHtml() {
+  return `<div class="cb-shift-bar">
+    <button type="button" class="cb-shift-btn cb-shift-left" title="Dịch sang trái" aria-label="Dịch sang trái">←</button>
+    <button type="button" class="cb-shift-btn cb-shift-center" title="Nháy đúp chuột để về vị trí cũ" aria-label="Về vị trí cũ">◉</button>
+    <button type="button" class="cb-shift-btn cb-shift-right" title="Dịch sang phải" aria-label="Dịch sang phải">→</button>
+  </div>`;
+}
