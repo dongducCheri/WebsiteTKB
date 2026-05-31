@@ -155,11 +155,10 @@ function buildKemPillHtml(maHP, sc) {
   }
   const picked = isMaLopSelected(maHP, kem);
   const cls = picked ? 'cb-pill cb-pill--selected cb-kem-btn' : 'cb-pill cb-kem-btn';
-  const check = picked ? '<span class="cb-pill-check" aria-hidden="true">✓</span>' : '';
   const title = picked
     ? 'Lớp kèm đã có trên TKB'
     : 'Thêm lớp kèm vào thời khóa biểu';
-  return `<button type="button" class="${cls}" data-mahp="${escHtml(maHP)}" data-malop-kem="${escHtml(kem)}" title="${escHtml(title)}" ${picked ? 'disabled' : ''}><span class="cb-pill-code">${escHtml(kem)}</span>${check}</button>`;
+  return `<button type="button" class="${cls}" data-mahp="${escHtml(maHP)}" data-malop-kem="${escHtml(kem)}" title="${escHtml(title)}" ${picked ? 'disabled' : ''}><span class="cb-pill-code">${escHtml(kem)}</span></button>`;
 }
 
 function buildConfirmedBlockHtml(block, sc) {
@@ -350,10 +349,16 @@ function setupBlockInteractions(gridContainer, domBlocks) {
     el.querySelectorAll('.cb-copy-btn').forEach(btn => {
       btn.addEventListener('click', async e => {
         e.stopPropagation();
-        const ok = await copyMaLopToClipboard(btn.dataset.copyMalop);
-        const prev = btn.title;
-        btn.title = ok ? 'Đã copy!' : 'Không copy được';
-        setTimeout(() => { btn.title = prev; }, 1200);
+        const code = btn.dataset.copyMalop;
+        const ok = await copyMaLopToClipboard(code);
+        if (ok) {
+          showToast(`Đã copy mã lớp ${code}`);
+          btn.classList.add('cb-copied');
+          clearTimeout(btn._copiedTimer);
+          btn._copiedTimer = setTimeout(() => btn.classList.remove('cb-copied'), 2500);
+        } else {
+          showToast('Không copy được mã lớp', 'error');
+        }
       });
     });
 

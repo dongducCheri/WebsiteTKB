@@ -866,7 +866,7 @@ body {
   transform: scale(1.03);
 }
 .cb-pill-check {
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   width: 14px;
@@ -874,9 +874,14 @@ body {
   border-radius: 50%;
   background: #fff;
   border: 1px solid #333;
+  color: #111;
   font-size: 9px;
+  font-weight: 700;
   line-height: 1;
   flex-shrink: 0;
+}
+.cb-copy-btn.cb-copied .cb-pill-check {
+  display: inline-flex;
 }
 .cb-kem-btn {
   cursor: pointer;
@@ -1254,3 +1259,30 @@ body {
 }
 .class-pill-item.class-selected .class-pill-schedule { color: #1a73e8; }
 .class-dragging { opacity: 0.5; transform: scale(0.98); }
+
+/* Toast thông báo copy mã lớp */
+.app-toast {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100000;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
+  background: #323232;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.app-toast--show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.app-toast--error {
+  background: #c62828;
+}

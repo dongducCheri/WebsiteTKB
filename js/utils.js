@@ -137,6 +137,21 @@ function findClassInCourse(maHP, maLop) {
   return Object.values(course.classes).find(cl => cl.maLop === code) || null;
 }
 
+function showToast(message, type = 'success') {
+  let el = document.getElementById('app-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'app-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = message;
+  el.className = `app-toast app-toast--${type} app-toast--show`;
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => {
+    el.classList.remove('app-toast--show');
+  }, 2500);
+}
+
 async function copyMaLopToClipboard(maLop) {
   const code = normalizeMaLopCode(maLop);
   if (!code) return false;
