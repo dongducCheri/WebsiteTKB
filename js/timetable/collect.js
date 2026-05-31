@@ -27,6 +27,27 @@ function findOverlapGroups(dayBlocks) {
   return [...map.values()].filter(g => g.length > 1);
 }
 
+const OVERLAP_OFFSET_PCT = 8;
+
+function assignOverlapLayout(dayBlocks) {
+  let gCounter = 0;
+  findOverlapGroups(dayBlocks).forEach(group => {
+    const gId = `g${gCounter++}`;
+    const members = group.map(i => dayBlocks[i]);
+    members.sort((a, b) => getBlockPickOrder(a) - getBlockPickOrder(b));
+    const n = members.length;
+
+    members.forEach((block, rank) => {
+      block._gId = gId;
+      block._gSize = n;
+      block._stackRank = rank;
+      block._overlapLeft = (n - 1 - rank) * OVERLAP_OFFSET_PCT;
+      block._overlapRight = rank * OVERLAP_OFFSET_PCT;
+      block._stackZ = 10 + rank;
+    });
+  });
+}
+
 function findBlockForSession(blocks, maHP, thu, kip, isPending, loaiLopKey) {
   return blocks.find(b => {
     if (b.maHP !== maHP || b.thu !== thu || b.kip !== kip) return false;

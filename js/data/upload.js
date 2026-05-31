@@ -20,6 +20,8 @@ function resetUpload() {
   state.selectedCourses.clear();
   state.timetableCourses.clear();
   state.selectedClasses = {};
+  state.timetableBlockOrder = [];
+  state.timetableBlockShift = {};
 
   document.getElementById('file-chip').hidden  = true;
   document.getElementById('btn-browse').hidden = false;
