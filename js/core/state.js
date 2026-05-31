@@ -11,5 +11,7 @@ const state = {
   timetableCourses: new Set(), // Học phần đang có trên lưới TKB (đã chọn ít nhất 1 loại lớp hoặc đang chọn)
   editingCourse: null,         // Học phần đang mở chế độ chọn thêm lớp (hiện block pending)
   timetableRowHeight: 60,      // Default height for the grid rows in pixels (60px works best for 6 kíp layout)
-  selectedClasses: {}
+  selectedClasses: {},
+  timetableBlockOrder: [],     // Thứ tự xác nhận lớp trên TKB — lớp chọn sau nằm trên khi trùng giờ
+  timetableBlockShift: {}      // Dịch ngang thủ công từng thẻ (bước × BLOCK_SHIFT_STEP_PX)
 };

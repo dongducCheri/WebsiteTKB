@@ -1,6 +1,5 @@
 function setupBlockInteractions(gridContainer, domBlocks) {
-  const groupEls  = new Map();
-  const groupActive = new Map();
+  const groupEls = new Map();
 
   gridContainer.querySelectorAll('.course-block').forEach((el, index) => {
     const block = domBlocks[index];
@@ -13,43 +12,38 @@ function setupBlockInteractions(gridContainer, domBlocks) {
     }
   });
 
-  groupEls.forEach((members, gId) => {
-    members.sort((a, b) => a.block.kip - b.block.kip);
-    groupActive.set(gId, members.length - 1);
-  });
-
-  const applyGroupZIndex = (gId) => {
-    const members = groupEls.get(gId);
-    const active  = groupActive.get(gId);
-    members.forEach(({ el, block }, i) => {
-      el.style.zIndex = (i === active) ? 20 : block.kip;
+  groupEls.forEach((members) => {
+    members.sort((a, b) => (a.block._stackRank ?? 0) - (b.block._stackRank ?? 0));
+    members.forEach(({ el, block }) => {
+      el.style.zIndex = block._stackZ ?? 10;
     });
-  };
-
-  groupEls.forEach((_, gId) => applyGroupZIndex(gId));
+  });
 
   gridContainer.querySelectorAll('.course-block').forEach((el, index) => {
     const block = domBlocks[index];
     if (!block) return;
 
-    el.querySelector('.cb-nav-up')?.addEventListener('click', e => {
+    const loaiKey = block.loaiLopKey || block.loaiLop || '';
+
+    el.querySelector('.cb-shift-left')?.addEventListener('click', e => {
       e.stopPropagation();
-      const gId = block._gId;
-      const members = groupEls.get(gId);
-      let curr = groupActive.get(gId);
-      curr = (curr - 1 + members.length) % members.length;
-      groupActive.set(gId, curr);
-      applyGroupZIndex(gId);
+      const next = getBlockShift(block) - 1;
+      setBlockShift(block.maHP, loaiKey, next);
+      applyBlockShiftToEl(el, block);
     });
 
-    el.querySelector('.cb-nav-dn')?.addEventListener('click', e => {
+    el.querySelector('.cb-shift-right')?.addEventListener('click', e => {
       e.stopPropagation();
-      const gId = block._gId;
-      const members = groupEls.get(gId);
-      let curr = groupActive.get(gId);
-      curr = (curr + 1) % members.length;
-      groupActive.set(gId, curr);
-      applyGroupZIndex(gId);
+      const next = getBlockShift(block) + 1;
+      setBlockShift(block.maHP, loaiKey, next);
+      applyBlockShiftToEl(el, block);
+    });
+
+    el.querySelector('.cb-shift-center')?.addEventListener('dblclick', e => {
+      e.stopPropagation();
+      e.preventDefault();
+      setBlockShift(block.maHP, loaiKey, 0);
+      applyBlockShiftToEl(el, block);
     });
 
     el.querySelector('.cb-close-btn')?.addEventListener('click', e => {
@@ -96,7 +90,7 @@ function setupBlockInteractions(gridContainer, domBlocks) {
     }
 
     el.addEventListener('click', e => {
-      if (e.target.closest('.cb-close-btn, .cb-kem-btn, .cb-copy-btn, .cb-nav, .cb-nav-btn')) return;
+      if (e.target.closest('.cb-close-btn, .cb-kem-btn, .cb-copy-btn, .cb-shift-bar, .cb-shift-btn')) return;
       e.stopPropagation();
 
       if (block.isPending) {

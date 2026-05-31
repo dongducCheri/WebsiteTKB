@@ -41,18 +41,78 @@ function getSelectedClassByType(maHP, loaiLop) {
   return map.__LEGACY__ || null;
 }
 
+function getBlockStackKey(maHP, loaiLop) {
+  return `${maHP}|${normalizeLoaiLop(loaiLop)}`;
+}
+
+function recordBlockPickOrder(maHP, loaiLop) {
+  if (!state.timetableBlockOrder) state.timetableBlockOrder = [];
+  const key = getBlockStackKey(maHP, loaiLop);
+  const i = state.timetableBlockOrder.indexOf(key);
+  if (i !== -1) state.timetableBlockOrder.splice(i, 1);
+  state.timetableBlockOrder.push(key);
+}
+
+function removeBlockPickOrder(maHP, loaiLop) {
+  if (!state.timetableBlockOrder) return;
+  const key = getBlockStackKey(maHP, loaiLop);
+  const i = state.timetableBlockOrder.indexOf(key);
+  if (i !== -1) state.timetableBlockOrder.splice(i, 1);
+  if (state.timetableBlockShift) delete state.timetableBlockShift[key];
+}
+
+function getBlockPickOrder(block) {
+  if (!state.timetableBlockOrder?.length) return 0;
+  const key = getBlockStackKey(block.maHP, block.loaiLopKey || block.loaiLop);
+  const idx = state.timetableBlockOrder.indexOf(key);
+  return idx === -1 ? 0 : idx;
+}
+
+function rebuildBlockOrderFromSelection() {
+  state.timetableBlockOrder = [];
+  [...state.timetableCourses].forEach(maHP => {
+    getSelectedLoaiLops(maHP).forEach(loaiKey => recordBlockPickOrder(maHP, loaiKey));
+  });
+}
+
+const BLOCK_SHIFT_STEP_PX = 12;
+
+function getBlockShift(block) {
+  const key = getBlockStackKey(block.maHP, block.loaiLopKey || block.loaiLop);
+  return state.timetableBlockShift?.[key] ?? 0;
+}
+
+function setBlockShift(maHP, loaiLop, steps) {
+  if (!state.timetableBlockShift) state.timetableBlockShift = {};
+  const key = getBlockStackKey(maHP, loaiLop);
+  if (steps === 0) delete state.timetableBlockShift[key];
+  else state.timetableBlockShift[key] = steps;
+}
+
+function blockShiftStyle(block) {
+  const px = getBlockShift(block) * BLOCK_SHIFT_STEP_PX;
+  return `--cb-shift:${px}px;`;
+}
+
+function applyBlockShiftToEl(el, block) {
+  const px = getBlockShift(block) * BLOCK_SHIFT_STEP_PX;
+  el.style.setProperty('--cb-shift', `${px}px`);
+}
+
 function setSelectedClass(maHP, loaiLop, maLop) {
   const map = getSelectedClassMap(maHP);
   const key = normalizeLoaiLop(loaiLop);
   if (map.__LEGACY__) delete map.__LEGACY__;
   map[key] = maLop;
   state.selectedClasses[maHP] = map;
+  recordBlockPickOrder(maHP, loaiLop);
 }
 
 function removeSelectedClass(maHP, loaiLop) {
   const map = getSelectedClassMap(maHP);
   delete map[normalizeLoaiLop(loaiLop)];
   delete map.__LEGACY__;
+  removeBlockPickOrder(maHP, loaiLop);
 
   if (Object.keys(map).length === 0) delete state.selectedClasses[maHP];
   else state.selectedClasses[maHP] = map;

@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('link-save').addEventListener('click', e => {
     e.preventDefault();
     if (!state.rows) { alert('Chưa có dữ liệu để lưu.'); return; }
-    const ok = saveToStorage(state.rows, state.stats, state.selectedClasses, state.timetableCourses);
+    const ok = saveToStorage(state.rows, state.stats, state.selectedClasses, state.timetableCourses, state.timetableBlockOrder, state.timetableBlockShift);
     alert(ok ? 'Đã lưu vào Browser! Lần sau vào trang sẽ tự load.' : 'Không thể lưu (bộ nhớ đầy).');
   });
 
@@ -68,7 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const courseMap = buildCourseMap(cached.rows);
     state.selectedClasses = cached.selectedClasses || {};
     state.timetableCourses = cached.timetableCourses || new Set();
+    state.timetableBlockOrder = cached.timetableBlockOrder || [];
+    state.timetableBlockShift = cached.timetableBlockShift || {};
     state.timetableCourses.forEach(hp => state.selectedCourses.add(hp));
+    if (!state.timetableBlockOrder.length && state.timetableCourses.size) {
+      rebuildBlockOrderFromSelection();
+    }
     
     onDataReady(cached.rows, courseMap, cached.stats);
     

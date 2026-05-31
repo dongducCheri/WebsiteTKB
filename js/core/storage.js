@@ -1,10 +1,12 @@
-function saveToStorage(rows, stats, selectedClasses = {}, timetableCourses = new Set()) {
+function saveToStorage(rows, stats, selectedClasses = {}, timetableCourses = new Set(), timetableBlockOrder = [], timetableBlockShift = {}) {
   try {
     const data = {
       rows: rows,
       stats: stats,
       selectedClasses: selectedClasses,
-      timetableCourses: [...timetableCourses]
+      timetableCourses: [...timetableCourses],
+      timetableBlockOrder: timetableBlockOrder || [],
+      timetableBlockShift: timetableBlockShift || {}
     };
     const compressed = LZString.compressToUTF16(JSON.stringify(data));
     localStorage.setItem('TKB_DATA_V2', compressed);
@@ -24,7 +26,9 @@ function loadFromStorage() {
         rows: data.rows,
         stats: data.stats,
         selectedClasses: data.selectedClasses || {},
-        timetableCourses: data.timetableCourses ? new Set(data.timetableCourses) : new Set()
+        timetableCourses: data.timetableCourses ? new Set(data.timetableCourses) : new Set(),
+        timetableBlockOrder: data.timetableBlockOrder || [],
+        timetableBlockShift: data.timetableBlockShift || {}
       };
     }
     
