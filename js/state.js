@@ -1,12 +1,15 @@
 const STORAGE_KEY_ROWS = 'TKB_ROWS';
 const STORAGE_KEY_META = 'TKB_META';
+const STORAGE_KEY_SELECTED = 'TKB_SELECTED';
+const STORAGE_KEY_COURSES = 'TKB_COURSES';
 
 const state = {
   rows:            null,
   courseMap:       null,
   stats:           null,
   selectedCourses: new Set(),
-  timetableCourses: new Set(), // Courses that are actively showing on the grid
+  timetableCourses: new Set(), // Học phần đang có trên lưới TKB (đã chọn ít nhất 1 loại lớp hoặc đang chọn)
+  editingCourse: null,         // Học phần đang mở chế độ chọn thêm lớp (hiện block pending)
   timetableRowHeight: 60,      // Default height for the grid rows in pixels (60px works best for 6 kíp layout)
   selectedClasses: {}
 };

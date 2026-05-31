@@ -184,7 +184,9 @@ body {
 }
 .dropdown-item:last-child { border-bottom: none; }
 .dropdown-item:hover      { background: #f0f6ff; }
+.dropdown-item.is-active  { background: #d2e3fc; }
 .dropdown-item.is-picked  { background: #e8f0fe; }
+.dropdown-item.is-picked.is-active { background: #c5d9f9; }
 
 .dropdown-code {
   font-family: monospace;
@@ -210,21 +212,33 @@ body {
 
 #chip-list {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   min-height: 32px;
 }
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: #e8f0fe;
-  border: 1px solid #aac4f7;
-  border-radius: 16px;
-  font-size: 14px;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #3c4043;
+  box-shadow: 0 1px 2px rgba(60,64,67,0.08);
 }
-.chip-x { cursor: pointer; color: #c00; font-weight: bold; }
+.chip-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+  font-weight: 500;
+}
+.chip-x { cursor: pointer; color: #c00; font-weight: bold; flex-shrink: 0; }
 .chip-x:hover { color: #900; }
 
 /* =============================================================
@@ -312,8 +326,10 @@ body {
 
 .hp-found-list {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 16px;
   width: 100vw;
   margin-left: calc(-50vw + 50%);
@@ -323,19 +339,34 @@ body {
 .hp-item {
   display: inline-flex;
   align-items: center;
-  padding: 8px 16px;
-  background: #f1f3f4;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 12px;
+  background: #fff;
   border: 1px solid #dadce0;
   border-radius: 20px;
-  font-size: 13.5px;
+  font-size: 13px;
   color: #3c4043;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   font-weight: 500;
-  box-shadow: 0 1px 2px rgba(60,64,67,0.1);
+  box-shadow: 0 1px 2px rgba(60,64,67,0.08);
 }
-.hp-item b { color: var(--blue); margin-right: 4px; }
+.hp-item-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+.hp-item b { color: var(--blue); margin-right: 2px; }
+.hp-picked-note {
+  color: #137333;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 .hp-item:hover {
   background: #e8f0fe;
   border-color: #aecbfa;
@@ -344,10 +375,13 @@ body {
   box-shadow: 0 2px 6px rgba(26,115,232,0.15);
 }
 .hp-item.hp-active {
+  background: #f8fbff;
+  border-color: #aecbfa;
+  box-shadow: 0 0 0 1px rgba(26,115,232,0.15);
+}
+.hp-item.hp-editing {
   background: #e8f0fe;
   border-color: var(--blue);
-  color: #1a73e8;
-  font-weight: 600;
   box-shadow: 0 0 0 2px rgba(26,115,232,0.2), 0 2px 4px rgba(26,115,232,0.1);
 }
 .hp-item.hp-dragging { opacity: 0.4; transform: scale(0.95); }
@@ -540,19 +574,62 @@ body {
 }
 .tt-day-col .course-block:hover { z-index: 20 !important; }
 .tt-day-col .course-block.cb-pending { border-left: 2px solid rgba(255,255,255,0.85) !important; }
-
-/* Khoi cho (pending) — hien tat ca lop truoc khi nguoi dung chon */
-.course-block.cb-pending {
-  background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%) !important;
-  border-left: none !important;
-  border-radius: 0 !important;
-  opacity: 0.7;
-  box-shadow: none;
+.tt-day-col .course-block.cb-pending .cb-label {
+  color: #111;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
-.course-block.cb-pending:hover {
-  opacity: 1;
-  box-shadow: 0 2px 8px rgba(26,115,232,0.2);
+.tt-day-col .course-block.cb-confirmed {
+  border: 2px solid rgba(255, 255, 255, 0.9) !important;
+  border-left: 4px solid #4a8fd4 !important;
+  border-radius: 6px !important;
+  overflow: visible !important;
+  padding: 10px 6px 4px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  background: linear-gradient(135deg, #c8dcf8 0%, #b3d0f5 100%) !important;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.18) !important;
+}
+.tt-day-col .course-block.cb-confirmed:hover {
+  transform: none !important;
+  z-index: 25 !important;
+}
+.tt-day-col .course-block.cb-confirmed:hover .cb-card {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(26, 115, 232, 0.45) transparent;
+}
+.tt-day-col .course-block.cb-confirmed:hover .cb-card::-webkit-scrollbar {
+  width: 4px;
+}
+.tt-day-col .course-block.cb-confirmed:hover .cb-card::-webkit-scrollbar-thumb {
+  background: rgba(26, 115, 232, 0.4);
+  border-radius: 2px;
+}
+
+/* Khoi cho (pending) — 1 thẻ / kíp, gom LT+BT+TN, giống web mẫu */
+.tt-day-col .course-block.cb-pending {
+  background: #9ec9f5 !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.95) !important;
+  border-radius: 2px !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  padding: 4px 6px !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+.tt-day-col .course-block.cb-pending:hover {
+  background: #8fc0f3 !important;
   cursor: pointer;
+  z-index: 30 !important;
 }
 
 .cb-label {
@@ -563,6 +640,17 @@ body {
   text-underline-offset: 2px;
   line-height: 1.3;
   cursor: pointer;
+}
+.cb-label--pending {
+  display: block;
+  width: 100%;
+  text-align: center;
+  color: #111;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 /* Mui ten dieu huong ▲▼ cho cac khoi bi chong len nhau */
@@ -677,26 +765,138 @@ body {
 
 .cb-close-btn {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 18px;
-  height: 18px;
-  background: #e57373 !important;
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  padding: 0 !important;
+  background: #ef5350 !important;
   color: #fff !important;
   border-radius: 50% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 11px !important;
-  font-weight: bold !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  font-family: Arial, sans-serif !important;
   cursor: pointer !important;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2) !important;
-  transition: all 0.15s ease !important;
-  z-index: 10 !important;
-  border: 1px solid #d32f2f !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22) !important;
+  transition: background 0.15s ease !important;
+  z-index: 12 !important;
+  border: none !important;
   line-height: 1 !important;
 }
-.cb-close-btn:hover { background: #f44336 !important; transform: scale(1.1) !important; }
+.cb-close-btn:hover {
+  background: #e53935 !important;
+  transform: none !important;
+}
+
+/* The lop da chon — ma lop, ma lop kem */
+.cb-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  pointer-events: auto;
+  justify-content: flex-start;
+}
+.course-block.cb-confirmed { cursor: default; }
+.tt-day-col .course-block.cb-confirmed .cb-card {
+  margin-top: 0;
+  padding-top: 0;
+}
+.course-block.cb-confirmed .cb-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #111;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  line-height: 1.2;
+  text-align: left;
+  width: 100%;
+  margin: 0;
+  padding: 0 14px 0 0;
+}
+.cb-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+  font-size: 0.65rem;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+.cb-row-lbl {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cb-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border: 1.5px solid #333;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.65);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.2;
+  font-family: inherit;
+}
+.cb-pill--selected {
+  background: rgba(255, 255, 255, 0.85);
+}
+.cb-pill--null {
+  color: #666;
+  border-style: dashed;
+  cursor: default;
+  border-radius: 4px;
+}
+.cb-copy-btn {
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.cb-copy-btn:hover {
+  background: #fff;
+  transform: scale(1.03);
+}
+.cb-pill-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #333;
+  font-size: 9px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.cb-kem-btn {
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.cb-kem-btn:hover:not(:disabled) {
+  background: #fff;
+  transform: scale(1.04);
+}
+.cb-kem-btn:disabled {
+  cursor: default;
+  opacity: 0.95;
+}
+.cb-room {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: #263238;
+  line-height: 1.2;
+  margin-top: 0;
+}
 
 /* =============================================================
    11. MODAL (huong dan + chon lop / chi tiet lop)

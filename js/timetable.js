@@ -27,21 +27,59 @@ function findOverlapGroups(dayBlocks) {
   return [...map.values()].filter(g => g.length > 1);
 }
 
+function findBlockForSession(blocks, maHP, thu, kip, isPending, loaiLopKey) {
+  return blocks.find(b => {
+    if (b.maHP !== maHP || b.thu !== thu || b.kip !== kip) return false;
+    if (isPending) return b.isPending;
+    return !b.isPending && b.loaiLopKey === loaiLopKey;
+  });
+}
+
+function formatPendingTypesLabel(subClasses) {
+  const types = [...new Set(subClasses.map(sc => sc.loaiLop).filter(Boolean))];
+  types.sort((a, b) => {
+    const ia = LOAI_LOP_ORDER.indexOf(normalizeLoaiLop(a));
+    const ib = LOAI_LOP_ORDER.indexOf(normalizeLoaiLop(b));
+    const ra = ia === -1 ? 99 : ia;
+    const rb = ib === -1 ? 99 : ib;
+    if (ra !== rb) return ra - rb;
+    return a.localeCompare(b);
+  });
+  return types.join(', ');
+}
+
+function buildPendingBlockHtml(block) {
+  const types = formatPendingTypesLabel(block.subClasses);
+  const count = block.subClasses.length;
+  const prefix = types ? `(${escHtml(types)}) ` : '';
+  const tip = `Có ${count} lớp`;
+  return `<span class="cb-label cb-label--pending" title="${escHtml(tip)}">${prefix}${escHtml(block.tenHP)}</span>`;
+}
+
 function collectCourseBlocks() {
   const blocks = [];
   const program = document.getElementById('program-select').value;
 
-  state.timetableCourses.forEach(maHP => {
+  const coursesOnGrid = new Set(state.timetableCourses);
+  if (state.editingCourse) coursesOnGrid.add(state.editingCourse);
+
+  coursesOnGrid.forEach(maHP => {
     const course = state.courseMap[maHP];
     if (!course) return;
 
-    const selectedLop = state.selectedClasses[maHP] || null;
+    const isEditing = state.editingCourse === maHP;
+    const selectedMap = getSelectedClassMap(maHP);
     let classesArray = Object.values(course.classes).filter(cl => !program || cl.maQL === program);
-    if (selectedLop) classesArray = classesArray.filter(cl => cl.maLop === selectedLop);
-
-    const isPending = !selectedLop;
+    classesArray = classesArray.filter(cl => {
+      const selectedLop = getSelectedClassByType(maHP, cl.loaiLop);
+      if (selectedLop) return cl.maLop === selectedLop;
+      return isEditing;
+    });
 
     classesArray.forEach(cl => {
+      const selectedLopForType = selectedMap[normalizeLoaiLop(cl.loaiLop)] || null;
+      const isPending = !selectedLopForType;
+
       cl.sessions.forEach(ss => {
         let thu = ss.thu;
         if (typeof thu === 'string') {
@@ -57,15 +95,17 @@ function collectCourseBlocks() {
         const kip = getKip(timeRange.startMin);
         if (kip === null) return;
 
-        const topPct = minutesToPct(timeRange.startMin);
-        const botPct = minutesToPct(timeRange.endMin);
+        const pos = sessionPositionInKip(timeRange.startMin, timeRange.endMin, kip);
+        if (!pos) return;
+
         const session = { phong: ss.phong || '', tuan: ss.tuan || '', rawRow: ss.rawRow || null };
 
-        const block = blocks.find(b => b.maHP === maHP && b.thu === thu && b.kip === kip);
+        const loaiLopKey = normalizeLoaiLop(cl.loaiLop);
+        const block = findBlockForSession(blocks, maHP, thu, kip, isPending, loaiLopKey);
 
         if (block) {
-          if (topPct < block.topPct) block.topPct = topPct;
-          if (botPct > block.botPct) block.botPct = botPct;
+          if (pos.topPct < block.topPct) block.topPct = pos.topPct;
+          if (pos.botPct > block.botPct) block.botPct = pos.botPct;
           block.heightPct = block.botPct - block.topPct;
 
           const sub = block.subClasses.find(sc => sc.maLop === cl.maLop);
@@ -78,8 +118,12 @@ function collectCourseBlocks() {
         } else {
           blocks.push({
             maHP, tenHP: course.tenHP,
-            thu, kip, topPct, botPct,
-            heightPct: botPct - topPct,
+            loaiLop: cl.loaiLop || '',
+            loaiLopKey,
+            thu, kip,
+            topPct: pos.topPct,
+            botPct: pos.botPct,
+            heightPct: pos.heightPct,
             isPending,
             subClasses: [{
               maLop: cl.maLop, maLopKem: cl.maLopKem || '',
@@ -93,6 +137,50 @@ function collectCourseBlocks() {
   });
 
   return blocks;
+}
+
+function formatBlockRoomWeek(subSessions) {
+  const rooms = [...new Set(subSessions.map(s => s.phong).filter(Boolean))];
+  const tuans = [...new Set(subSessions.map(s => s.tuan).filter(Boolean))];
+  if (!rooms.length && !tuans.length) return '';
+  let text = rooms.length ? `Phòng: ${rooms.join(', ')}` : 'Phòng: —';
+  if (tuans.length) text += ` (Tuần ${tuans.join(', ')})`;
+  return text;
+}
+
+function buildKemPillHtml(maHP, sc) {
+  const kem = normalizeMaLopCode(sc.maLopKem);
+  if (!kem || kem === normalizeMaLopCode(sc.maLop)) {
+    return `<span class="cb-pill cb-pill--null" title="Không có mã lớp kèm">NULL</span>`;
+  }
+  const picked = isMaLopSelected(maHP, kem);
+  const cls = picked ? 'cb-pill cb-pill--selected cb-kem-btn' : 'cb-pill cb-kem-btn';
+  const check = picked ? '<span class="cb-pill-check" aria-hidden="true">✓</span>' : '';
+  const title = picked
+    ? 'Lớp kèm đã có trên TKB'
+    : 'Thêm lớp kèm vào thời khóa biểu';
+  return `<button type="button" class="${cls}" data-mahp="${escHtml(maHP)}" data-malop-kem="${escHtml(kem)}" title="${escHtml(title)}" ${picked ? 'disabled' : ''}><span class="cb-pill-code">${escHtml(kem)}</span>${check}</button>`;
+}
+
+function buildConfirmedBlockHtml(block, sc) {
+  const loai = sc.loaiLop ? ` (${escHtml(sc.loaiLop)})` : '';
+  const roomWeek = formatBlockRoomWeek(sc.subSessions);
+  return `
+    <div class="cb-card">
+      <div class="cb-title">${escHtml(block.tenHP)}${loai}</div>
+      <div class="cb-row">
+        <span class="cb-row-lbl">Mã lớp:</span>
+        <button type="button" class="cb-pill cb-pill--selected cb-copy-btn" data-copy-malop="${escHtml(sc.maLop)}" title="Click để copy mã lớp">
+          <span class="cb-pill-code">${escHtml(sc.maLop)}</span>
+          <span class="cb-pill-check" aria-hidden="true">✓</span>
+        </button>
+      </div>
+      <div class="cb-row">
+        <span class="cb-row-lbl">Mã lớp kèm:</span>
+        ${buildKemPillHtml(block.maHP, sc)}
+      </div>
+      ${roomWeek ? `<div class="cb-room">${escHtml(roomWeek)}</div>` : ''}
+    </div>`;
 }
 
 function renderTimetableGrid() {
@@ -114,10 +202,10 @@ function renderTimetableGrid() {
 
   const blocks = collectCourseBlocks();
 
-  // Annotate blocks với group info (các block chồng nhau trong cùng ngày)
+  // Chỉ gom nhóm chồng giờ cho thẻ đã chọn (pending: 1 thẻ / kíp / học phần)
   let gCounter = 0;
   for (let d = 2; d <= 7; d++) {
-    const dayBlocks = blocks.filter(b => b.thu === d);
+    const dayBlocks = blocks.filter(b => b.thu === d && !b.isPending);
     findOverlapGroups(dayBlocks).forEach(group => {
       const gId = `g${gCounter++}`;
       group.forEach(localIdx => {
@@ -143,38 +231,35 @@ function renderTimetableGrid() {
     timeLabels.forEach(({ label, pct }) => {
       html += `<div class="tt-gridline${label.endsWith(':00') ? ' tt-gl-hour' : ''}" style="top:${pct.toFixed(2)}%"></div>`;
     });
-
     blocks.filter(b => b.thu === d).forEach(block => {
       const sc0 = block.subClasses[0];
       const pendingCls = block.isPending ? ' cb-pending' : '';
 
-      // Label: "(LT, BT, TN) Tên môn" dạng 1 dòng
       let labelHtml = '';
       if (block.isPending) {
-        const types = block.subClasses.map(sc => sc.loaiLop).filter(Boolean).join(', ');
-        const prefix = types ? `(${escHtml(types)}) ` : '';
-        const tip = `Có ${block.subClasses.length} lớp`;
-        labelHtml = `<span class="cb-label" title="${escHtml(tip)}">${prefix}${escHtml(block.tenHP)}</span>`;
+        labelHtml = buildPendingBlockHtml(block);
       } else if (sc0) {
-        const rooms = [...new Set(sc0.subSessions.map(s => s.phong).filter(Boolean))].join(', ');
-        const prefix = sc0.loaiLop ? `(${escHtml(sc0.loaiLop)}) ` : '';
-        labelHtml  = `<span class="cb-label">${prefix}${escHtml(block.tenHP)}</span>`;
-        if (sc0.maLop) labelHtml += `<span class="cb-details">${escHtml(sc0.maLop)}</span>`;
-        if (rooms)     labelHtml += `<span class="cb-details">${escHtml(rooms)}</span>`;
+        labelHtml = buildConfirmedBlockHtml(block, sc0);
       }
 
-      // Mũi tên điều hướng nếu block nằm trong nhóm chồng
-      const navHtml = block._gId
+      const confirmedCls = !block.isPending ? ' cb-confirmed' : '';
+      const closeBtnHtml = !block.isPending
+        ? `<button type="button" class="cb-close-btn" data-close-type="${escHtml(block.loaiLopKey || '')}" title="Bỏ chọn lớp" aria-label="Bỏ chọn lớp">×</button>`
+        : '';
+
+      const navHtml = (!block.isPending && block._gId)
         ? `<div class="cb-nav" data-gid="${escHtml(block._gId)}">
              <button class="cb-nav-btn cb-nav-up" title="Thẻ trên">▲</button>
              <button class="cb-nav-btn cb-nav-dn" title="Thẻ dưới">▼</button>
            </div>`
         : '';
 
-      html += `<div class="course-block${pendingCls}"
-        style="top:${block.topPct.toFixed(2)}%;height:${block.heightPct.toFixed(2)}%;z-index:${block.kip}"
+      const zIndex = block.kip;
+
+      html += `<div class="course-block${pendingCls}${confirmedCls}"
+        style="top:${block.topPct.toFixed(2)}%;height:${block.heightPct.toFixed(2)}%;z-index:${zIndex}"
         data-mahp="${escHtml(block.maHP)}"
-        data-gid="${escHtml(block._gId || '')}">${navHtml}${labelHtml}</div>`;
+        data-gid="${escHtml(block._gId || '')}">${closeBtnHtml}${navHtml}${labelHtml}</div>`;
     });
 
     html += `</div>`;
@@ -248,14 +333,53 @@ function setupBlockInteractions(gridContainer, domBlocks) {
       applyGroupZIndex(gId);
     });
 
+    el.querySelector('.cb-close-btn')?.addEventListener('click', e => {
+      e.stopPropagation();
+      removeSelectedClass(block.maHP, block.loaiLop || block.loaiLopKey || '');
+      onClassRemovedFromTimetable(block.maHP);
+      refreshSelectionUI();
+    });
+
+    el.querySelectorAll('.cb-kem-btn:not(:disabled)').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        addCompanionClass(btn.dataset.mahp, btn.dataset.malopKem);
+      });
+    });
+
+    el.querySelectorAll('.cb-copy-btn').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const ok = await copyMaLopToClipboard(btn.dataset.copyMalop);
+        const prev = btn.title;
+        btn.title = ok ? 'Đã copy!' : 'Không copy được';
+        setTimeout(() => { btn.title = prev; }, 1200);
+      });
+    });
+
+    const scrollCard = el.querySelector('.cb-card');
+    if (scrollCard && el.classList.contains('cb-confirmed')) {
+      el.addEventListener('wheel', e => {
+        if (scrollCard.scrollHeight <= scrollCard.clientHeight) return;
+        const atTop = scrollCard.scrollTop <= 0;
+        const atBottom = scrollCard.scrollTop + scrollCard.clientHeight >= scrollCard.scrollHeight - 1;
+        if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        scrollCard.scrollTop += e.deltaY;
+      }, { passive: false });
+    }
+
     // Click vào block (chọn lớp / xem chi tiết)
     el.addEventListener('click', e => {
+      if (e.target.closest('.cb-close-btn, .cb-kem-btn, .cb-copy-btn, .cb-nav, .cb-nav-btn')) return;
       e.stopPropagation();
 
       if (block.isPending) {
         if (block.subClasses.length === 1) {
-          state.selectedClasses[block.maHP] = block.subClasses[0].maLop;
-          renderTimetableGrid();
+          setSelectedClass(block.maHP, block.subClasses[0].loaiLop || block.loaiLop, block.subClasses[0].maLop);
+          onClassPicked(block.maHP);
+          refreshSelectionUI();
         } else {
           showConflictModal(block);
         }
@@ -292,7 +416,7 @@ function showConflictModal(block) {
   modal.innerHTML = `
     <div class="cmodal-box">
       <button class="cmodal-close-x">✕</button>
-      <h2 class="cmodal-title">Thời gian bạn chọn có lớp trùng, xin hãy chọn 1 trong các lớp dưới</h2>
+      <h2 class="cmodal-title">Chọn 1 lớp trong khung giờ này</h2>
       <div class="cmodal-table-wrap">
         <table class="cmodal-table">
           <thead><tr>${headers.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr></thead>
@@ -313,9 +437,11 @@ function showConflictModal(block) {
 
   modal.querySelectorAll('.conflict-row').forEach(row => {
     row.addEventListener('click', () => {
-      state.selectedClasses[row.dataset.mahp] = row.dataset.malop;
+      const selectedClass = block.subClasses.find(sc => sc.maLop === row.dataset.malop);
+      setSelectedClass(row.dataset.mahp, selectedClass?.loaiLop || block.loaiLop, row.dataset.malop);
+      onClassPicked(row.dataset.mahp);
       close();
-      renderTimetableGrid();
+      refreshSelectionUI();
     });
   });
 }
@@ -361,9 +487,10 @@ function showBlockDetailModal(block) {
   modal.addEventListener('click', e => { if (e.target === modal) close(); });
 
   modal.querySelector('.bdetail-deselect-btn').addEventListener('click', () => {
-    delete state.selectedClasses[block.maHP];
+    removeSelectedClass(block.maHP, sc.loaiLop || block.loaiLop || block.loaiLopKey || '');
+    onClassRemovedFromTimetable(block.maHP);
     close();
-    renderTimetableGrid();
+    refreshSelectionUI();
   });
 }
 
@@ -384,10 +511,9 @@ function setupTimetableDrop(gridContainer) {
     e.preventDefault();
     ttWrap.classList.remove('tt-drag-over');
     const maHP = e.dataTransfer.getData('text/plain');
-    if (maHP && state.courseMap[maHP] && !state.timetableCourses.has(maHP)) {
-      state.timetableCourses.add(maHP);
-      updateChipStyles();
-      renderTimetableGrid();
+    if (maHP && state.courseMap[maHP]) {
+      startEditingCourse(maHP);
+      refreshSelectionUI();
     }
   });
 }
