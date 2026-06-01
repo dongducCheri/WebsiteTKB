@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Export
   document.getElementById('link-export').addEventListener('click', e => {
-    e.preventDefault(); exportPDF();
+    e.preventDefault(); exportExcel();
   });
 
   // Tìm lớp

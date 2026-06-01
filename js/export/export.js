@@ -1,34 +1,14 @@
-function exportPDF() {
+function exportExcel() {
   if (!state.courseMap || Object.keys(state.selectedClasses).length === 0) {
     alert('Chưa có lớp nào được chọn để xuất.');
     return;
   }
 
-  let html = `
-    <div style="font-family: Arial, sans-serif; color: #000; width: 100%; margin: 0 auto; padding: 20px;">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <h2 style="margin: 0; padding: 0;">DANH SÁCH LỚP ĐÃ ĐĂNG KÝ</h2>
-        <p style="margin: 5px 0 0 0; font-size: 14px; color: #555;">Thời khóa biểu HUST</p>
-      </div>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-  `;
-
-  html += `
-    <thead>
-      <tr style="background-color: #f2f2f2; text-align: left;">
-        <th style="border: 1px solid #ddd; padding: 10px; text-align: center; width: 40px;">STT</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">Mã HP</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">Tên HP</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">Mã Lớp</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">Mã Lớp Kèm</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">Loại Lớp</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">Thời gian (Thứ-Kíp-Tuần-Phòng)</th>
-      </tr>
-    </thead>
-    <tbody>
-  `;
-
   let stt = 1;
+  const aoa = [
+    ['STT', 'Mã HP', 'Tên HP', 'Mã Lớp', 'Mã Lớp Kèm', 'Loại Lớp', 'Thứ', 'Kíp', 'Thời gian', 'Tuần', 'Phòng']
+  ];
+
   for (const [maHP, typeMap] of Object.entries(state.selectedClasses)) {
     const course = state.courseMap[maHP];
     if (!course) continue;
@@ -47,57 +27,85 @@ function exportPDF() {
       const cls = course.classes[maLop];
       if (!cls) continue;
 
-    const formatTime = (t) => {
-      if (!t || !t.includes('-')) return t;
-      return t.split('-').map(p => {
-        p = p.trim();
-        return p.length === 4 ? p.slice(0, 2) + ':' + p.slice(2, 4) : p;
-      }).join(' - ');
-    };
+      const formatTime = (t) => {
+        if (!t || !t.includes('-')) return t;
+        return t.split('-').map(p => {
+          p = p.trim();
+          return p.length === 4 ? p.slice(0, 2) + ':' + p.slice(2, 4) : p;
+        }).join(' - ');
+      };
 
-    const sessionsStr = cls.sessions.map(s =>
-      `Thứ ${s.thu}, ${formatTime(s.thoiGian)}, Tuần ${s.tuan}, P.${s.phong}`
-    ).join('<br>');
+      if (!cls.sessions || cls.sessions.length === 0) {
+        aoa.push([
+          stt++, maHP, course.tenHP, maLop, cls.maLopKem || '', cls.loaiLop || loaiLop,
+          '', '', '', '', ''
+        ]);
+        continue;
+      }
 
-    html += `
-      <tr>
-        <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">${stt++}</td>
-        <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">${maHP}</td>
-        <td style="border: 1px solid #ddd; padding: 10px;">${course.tenHP}</td>
-        <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${maLop}</td>
-        <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${cls.maLopKem || ''}</td>
-        <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${cls.loaiLop || loaiLop}</td>
-        <td style="border: 1px solid #ddd; padding: 10px;">${sessionsStr}</td>
-      </tr>
-    `;
+      for (let i = 0; i < cls.sessions.length; i++) {
+        const s = cls.sessions[i];
+        
+        let kip = '';
+        if (typeof parseSessionTime !== 'undefined' && typeof getKip !== 'undefined') {
+          const parsed = parseSessionTime(s.thoiGian);
+          if (parsed && parsed.startMin !== null) {
+            const k = getKip(parsed.startMin);
+            if (k !== null) kip = k;
+          }
+        }
+
+        aoa.push([
+          i === 0 ? stt++ : '', // Chỉ đánh số STT ở dòng đầu tiên của lớp
+          maHP,
+          course.tenHP,
+          maLop,
+          cls.maLopKem || '',
+          cls.loaiLop || loaiLop,
+          s.thu || '',
+          kip,
+          formatTime(s.thoiGian),
+          s.tuan || '',
+          s.phong || ''
+        ]);
+      }
     }
   }
 
-  html += '</tbody></table></div>';
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
 
-  let printDiv = document.getElementById('print-area');
-  if (!printDiv) {
-    printDiv = document.createElement('div');
-    printDiv.id = 'print-area';
-    document.body.appendChild(printDiv);
+  // Styling: Center alignment and auto-fit columns
+  const cols = aoa[0].map(() => ({ wch: 10 })); // Default minimum width
 
-    // Inject CSS to hide everything except print-area when printing
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @media screen {
-        #print-area { display: none !important; }
+  for (let r = 0; r < aoa.length; r++) {
+    for (let c = 0; c < aoa[r].length; c++) {
+      const cellAddress = XLSX.utils.encode_cell({ r, c });
+      const cell = ws[cellAddress];
+      if (!cell) continue;
+
+      // 1. Add center alignment style (and bold for header row)
+      cell.s = {
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        font: r === 0 ? { bold: true } : {}
+      };
+
+      // 2. Calculate width
+      const valStr = cell.v !== undefined && cell.v !== null ? cell.v.toString() : '';
+      // Handle multiline text width
+      const lines = valStr.split('\n');
+      let maxLineLen = 0;
+      for (const line of lines) {
+        if (line.length > maxLineLen) maxLineLen = line.length;
       }
-      @media print {
-        body > *:not(#print-area):not(style):not(script) { display: none !important; }
-        #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+      const width = maxLineLen + 4; // Add padding
+      if (width > cols[c].wch) {
+        cols[c].wch = width;
       }
-    `;
-    document.head.appendChild(style);
+    }
   }
+  ws['!cols'] = cols;
 
-  printDiv.innerHTML = html;
-
-  setTimeout(() => {
-    window.print();
-  }, 200);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "DanhSachLop");
+  XLSX.writeFile(wb, "ThoiKhoaBieu.xlsx");
 }
