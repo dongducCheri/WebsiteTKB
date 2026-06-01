@@ -47,6 +47,8 @@ function renderSearchResults() {
         </span>`;
     });
     html += `</div>`;
+
+    html += renderAIPanelHTML();
   }
 
   html += `
@@ -100,6 +102,7 @@ function renderSearchResults() {
   }
 
   if (typeof refreshTopChipsUI === 'function') refreshTopChipsUI();
+  if (found.length > 0 && typeof initAIPanel === 'function') initAIPanel();
   renderTimetableGrid();
 }
 
