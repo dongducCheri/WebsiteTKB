@@ -160,24 +160,6 @@ body {
   margin-top: 4px;
 }
 .search-actions .btn-search { margin-top: 0; }
-.btn-ai-schedule {
-  border: 1px solid #7baaf7;
-  background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%);
-  color: #1a56b0;
-  font-weight: 600;
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-.btn-ai-schedule:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d2e3fc 0%, #c2d7f7 100%);
-  border-color: var(--blue);
-}
-.btn-ai-schedule:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 .ai-panel-slot {
   margin: 12px 0 4px;
 }
