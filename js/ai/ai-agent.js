@@ -188,9 +188,44 @@ async function runAISchedule() {
   }
 }
 
+function updateAIScheduleButton(enabled) {
+  const btn = document.getElementById('btn-ai-schedule');
+  if (!btn) return;
+  btn.disabled = !enabled;
+}
+
+function hideAIPanel() {
+  const slot = document.getElementById('ai-panel-slot');
+  if (!slot) return;
+  slot.hidden = true;
+  slot.innerHTML = '';
+  slot.removeAttribute('data-inited');
+}
+
+function showAIPanel() {
+  const slot = document.getElementById('ai-panel-slot');
+  if (!slot) return;
+  if (!slot.innerHTML.trim()) {
+    slot.innerHTML = renderAIPanelHTML();
+    initAIPanel();
+    slot.dataset.inited = '1';
+  }
+  slot.hidden = false;
+  document.getElementById('ai-prompt')?.focus();
+  slot.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function initAIScheduleButton() {
+  document.getElementById('btn-ai-schedule')?.addEventListener('click', () => {
+    if (document.getElementById('btn-ai-schedule')?.disabled) return;
+    showAIPanel();
+  });
+}
+
 function initAIPanel() {
   const panel = document.getElementById('ai-panel');
-  if (!panel) return;
+  if (!panel || panel.dataset.listeners === '1') return;
+  panel.dataset.listeners = '1';
 
   const textarea = document.getElementById('ai-prompt');
   const btn = document.getElementById('ai-submit-btn');

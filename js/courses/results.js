@@ -6,6 +6,8 @@ function renderSearchResults() {
   if (selectedHPs.length === 0) {
     container.innerHTML = '<div class="muted">Chưa chọn học phần nào.</div>';
     container.hidden = false;
+    if (typeof updateAIScheduleButton === 'function') updateAIScheduleButton(false);
+    if (typeof hideAIPanel === 'function') hideAIPanel();
     return;
   }
 
@@ -47,8 +49,6 @@ function renderSearchResults() {
         </span>`;
     });
     html += `</div>`;
-
-    html += renderAIPanelHTML();
   }
 
   html += `
@@ -102,7 +102,10 @@ function renderSearchResults() {
   }
 
   if (typeof refreshTopChipsUI === 'function') refreshTopChipsUI();
-  if (found.length > 0 && typeof initAIPanel === 'function') initAIPanel();
+  if (typeof updateAIScheduleButton === 'function') {
+    updateAIScheduleButton(found.length > 0);
+    if (typeof hideAIPanel === 'function') hideAIPanel();
+  }
   renderTimetableGrid();
 }
 
