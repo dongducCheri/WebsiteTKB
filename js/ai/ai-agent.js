@@ -123,7 +123,7 @@ function renderAIPanelHTML() {
       <textarea id="ai-prompt" class="ai-textarea" rows="2"
         placeholder="VD: Nghỉ buổi sáng nhiều nhất có thể / Có ít nhất 1 ngày trống hoàn toàn trong tuần"></textarea>
       <div class="ai-panel-actions">
-        <button type="button" class="btn btn-ai" id="ai-submit-btn">Gửi cho AI</button>
+        <button type="button" class="btn btn-ai" id="ai-submit-btn">Gửi</button>
         <span id="ai-status" class="ai-status" aria-live="polite"></span>
       </div>
       <div id="ai-reason" class="ai-reason" hidden></div>
