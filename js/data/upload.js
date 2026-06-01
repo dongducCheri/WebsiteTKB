@@ -32,6 +32,8 @@ function resetUpload() {
   document.getElementById('program-select').disabled = true;
   document.getElementById('btn-search').disabled     = true;
   document.getElementById('results').hidden          = true;
+  if (typeof updateAIScheduleButton === 'function') updateAIScheduleButton(false);
+  if (typeof hideAIPanel === 'function') hideAIPanel();
 
   renderChips();
 }

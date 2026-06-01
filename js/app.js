@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Search (dropdown autocomplete)
   initSearch();
+  if (typeof initAIScheduleButton === 'function') initAIScheduleButton();
 
   // Export
   document.getElementById('link-export').addEventListener('click', e => {
